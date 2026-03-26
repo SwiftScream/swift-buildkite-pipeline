@@ -1,0 +1,11 @@
+steps:
+- label: Ordering
+  command: echo ordering
+  agents:
+    zeta: z
+    queue: ios2
+    alpha: a
+  env:
+    B: '2'
+    A: '1'
+    C: '3'

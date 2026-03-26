@@ -1,0 +1,9 @@
+steps:
+- label: Typed Key Command
+  key: typed-command-key
+  command: echo typed
+- group: Typed Group
+  key: typed-group-key
+  steps:
+  - label: Nested
+    command: echo nested

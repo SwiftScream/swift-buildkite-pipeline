@@ -1,0 +1,14 @@
+env:
+  CI: '1'
+agents:
+  queue: macos
+notify:
+- slack: '#ci'
+priority: 20
+steps:
+- group: Tests
+  steps:
+  - label: Unit Tests
+    command: swift test
+- label: Lint
+  command: swift-format lint .

@@ -1,0 +1,7 @@
+steps:
+- label: Chunked Env
+  command: echo env
+  env:
+    SWIFT_VERSION: '6.0'
+    CI: '1'
+    MODULE: BuildkitePipeline

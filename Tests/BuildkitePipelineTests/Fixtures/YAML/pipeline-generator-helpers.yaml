@@ -1,0 +1,10 @@
+env:
+  CI: '1'
+steps:
+- label: Lint
+  key: lint
+  command: swift-format lint .
+- wait: null
+- label: Tests
+  depends_on: lint
+  command: swift test

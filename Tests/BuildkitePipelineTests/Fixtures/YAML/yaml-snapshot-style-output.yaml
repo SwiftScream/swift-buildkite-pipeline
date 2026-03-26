@@ -1,0 +1,8 @@
+steps:
+- label: Lint
+  key: lint
+  command: swift-format lint .
+- wait: null
+- label: Test
+  depends_on: lint
+  command: swift test

@@ -1,0 +1,34 @@
+env:
+  FIRST_BRANCH: 'true'
+  SHARED_A: '1'
+  SHARED_B: '2'
+agents:
+  branch: second
+  queue: ios2
+  fleet: test
+notify:
+- slack: '#pipeline-builder'
+meta_data:
+  owner: ci
+  component: builder-coverage
+steps:
+- label: Else Top
+  command: echo else
+- label: Loop Top 1
+  command: echo Loop Top 1
+- label: Loop Top 2
+  command: echo Loop Top 2
+- label: Top Array Step
+  command: echo top-array
+- group: Child Control Flow
+  steps:
+  - label: Child First
+    command: echo child-first
+  - label: Child Second
+    command: echo child-second
+  - label: Child Loop 1
+    command: echo child-loop-1
+  - label: Child Loop 2
+    command: echo child-loop-2
+  - label: Child Array Step
+    command: echo child-array

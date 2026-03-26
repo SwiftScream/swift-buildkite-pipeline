@@ -1,0 +1,30 @@
+steps:
+- group: Notify Gate
+  steps:
+  - label: Inside Group
+    command: echo group
+  notify:
+  - slack: '#group-first'
+  - webhook: https://example.com/hook
+  - email: loop-a@example.com
+  - email: loop-b@example.com
+  - email: array@example.com
+- block: Release?
+  fields:
+  - key: reason
+    text: Reason
+  - key: env
+    select: Environment
+    options:
+    - label: Staging
+      value: staging
+    - label: Production
+      value: production
+  - key: loop_1
+    text: Loop 1
+  - key: loop_2
+    text: Loop 2
+  - key: array_field
+    text: Array Field
+  - key: direct_field
+    text: Direct Field

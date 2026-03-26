@@ -1,0 +1,7 @@
+meta_data:
+  service: mobile
+  owner: ios-team
+  component: pipeline
+steps:
+- label: No-op
+  command: echo ok

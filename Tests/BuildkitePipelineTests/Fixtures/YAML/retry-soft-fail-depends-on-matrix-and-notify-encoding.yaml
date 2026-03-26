@@ -1,0 +1,30 @@
+steps:
+- label: Matrix Tests
+  depends_on:
+  - build
+  - lint
+  command: swift test
+  matrix:
+    adjustments:
+    - soft_fail: true
+      with:
+        os: ubuntu-22.04
+        swift: '6.0'
+    setup:
+      os:
+      - macos-14
+      - ubuntu-22.04
+      swift:
+      - '5.10'
+      - '6.0'
+  notify:
+  - github_check
+  - slack: '#ci-alerts'
+  retry:
+    automatic:
+      limit: 2
+    manual:
+      permit_on_passed: true
+  soft_fail:
+  - exit_status: 1
+  - exit_status: 2

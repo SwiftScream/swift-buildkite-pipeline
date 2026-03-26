@@ -1,0 +1,8 @@
+steps:
+- group: Verification
+  key: verification
+  steps:
+  - label: Lint
+    command: swift-format lint .
+  - label: Tests
+    command: swift test

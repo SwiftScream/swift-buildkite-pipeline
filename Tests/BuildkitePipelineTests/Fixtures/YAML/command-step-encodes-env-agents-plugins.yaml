@@ -1,0 +1,15 @@
+steps:
+- label: Tests
+  key: tests
+  command: swift test --parallel
+  agents:
+    queue: macos
+    xcode: '15.4'
+  env:
+    SWIFT_VERSION: '6.0'
+    CI: '1'
+  plugins:
+  - docker#v5.9.0: null
+  - artifacts#v1.9.4:
+      upload: build/**/*.zip
+  artifact_paths: build/**/*.xcresult;build/**/*.zip

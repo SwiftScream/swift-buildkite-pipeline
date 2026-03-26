@@ -1,0 +1,13 @@
+steps:
+- trigger: deploy-pipeline
+  label: Deploy
+  key: deploy
+  async: true
+  build:
+    branch: main
+    commit: HEAD
+    message: Triggered from BuildkitePipeline
+    env:
+      RELEASE: 'true'
+    meta_data:
+      service: api

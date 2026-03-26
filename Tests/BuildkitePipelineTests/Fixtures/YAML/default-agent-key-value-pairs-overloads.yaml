@@ -1,0 +1,7 @@
+agents:
+  zeta: z
+  queue: ios2
+  alpha: a
+steps:
+- label: No-op
+  command: echo ok

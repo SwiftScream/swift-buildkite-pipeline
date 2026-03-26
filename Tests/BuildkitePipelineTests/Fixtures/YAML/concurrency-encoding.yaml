@@ -1,0 +1,11 @@
+steps:
+- label: Modifier Concurrency
+  command: echo modifier
+  concurrency: 1
+  concurrency_group: deploy
+  concurrency_method: ordered
+- label: Initializer Concurrency
+  command: echo initializer
+  concurrency: 2
+  concurrency_group: tests
+  concurrency_method: eager

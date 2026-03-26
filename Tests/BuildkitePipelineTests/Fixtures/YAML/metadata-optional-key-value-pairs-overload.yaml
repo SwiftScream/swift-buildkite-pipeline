@@ -1,0 +1,7 @@
+meta_data:
+  service: mobile
+  branch: main
+  component: pipeline
+steps:
+- label: No-op
+  command: echo ok

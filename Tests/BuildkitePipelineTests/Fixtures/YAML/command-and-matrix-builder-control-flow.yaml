@@ -1,0 +1,31 @@
+steps:
+- label: Command Builder Coverage
+  command: echo command-second
+  agents:
+    role: coverage
+  env:
+    ENV_ONE: '1'
+    ENV_TWO: '2'
+  plugins:
+  - docker#v5.9.0: null
+  artifact_paths: logs/a/**;logs/b/**;logs/array/**
+  matrix:
+    adjustments:
+    - soft_fail: true
+      with:
+        swift: '6.0'
+    - skip: false
+      with:
+        os: macos
+    - skip: true
+      with:
+        os: linux
+    setup:
+      arch:
+      - arm64
+      swift:
+      - '5.10'
+      - '6.0'
+  notify:
+  - slack: '#command-array'
+  - slack: '#command-builder'

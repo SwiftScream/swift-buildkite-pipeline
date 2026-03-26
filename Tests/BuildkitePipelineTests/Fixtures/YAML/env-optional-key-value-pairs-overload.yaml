@@ -1,0 +1,7 @@
+steps:
+- label: Optional Env
+  command: echo optional-env
+  env:
+    CI: '1'
+    BRANCH: main
+    MODULE: BuildkitePipeline

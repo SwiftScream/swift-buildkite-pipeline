@@ -1,0 +1,8 @@
+steps:
+- label: Plugin Options Ordering
+  command: echo plugin-order
+  plugins:
+  - example/plugin#v1.0.0:
+      first: one
+      second: two
+      third: three

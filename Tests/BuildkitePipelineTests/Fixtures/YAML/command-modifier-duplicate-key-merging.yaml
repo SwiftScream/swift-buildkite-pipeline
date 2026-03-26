@@ -1,0 +1,7 @@
+steps:
+- label: Duplicate Keys
+  command: echo ok
+  agents:
+    queue: macos
+  env:
+    SWIFT_VERSION: '6.0'

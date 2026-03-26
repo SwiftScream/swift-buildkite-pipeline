@@ -1,3 +1,5 @@
+child_config: Tests/.swiftlint-tests.yml
+
 disabled_rules:
   - line_length
   - file_length
@@ -15,3 +17,36 @@ trailing_comma:
 
 vertical_whitespace:
   max_empty_lines: 2
+
+identifier_name:
+  excluded:
+    - id
+    - i
+    - os
+    - Step
+    - Wait
+    - Trigger
+    - Group
+    - Steps
+    - Block
+    - Input
+    - Option
+    - TextField
+    - SelectField
+    - Command
+    - ArtifactPath
+    - Env
+    - Agent
+    - RetryRule
+    - Matrix
+    - Dimension
+    - Adjustment
+    - GlobalEnv
+    - DefaultAgent
+    - Metadata
+    - NotifyEmail
+    - NotifySlack
+    - NotifyWebhook
+    - StepNotifySlack
+    - StepNotifyGitHubCheck
+    - StepNotifyGitHubCommitStatus

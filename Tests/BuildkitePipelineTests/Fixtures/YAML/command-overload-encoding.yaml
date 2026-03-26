@@ -1,0 +1,13 @@
+steps:
+- label: Array Modifier
+  command:
+  - echo one
+  - echo two
+- label: Variadic Modifier
+  command:
+  - echo a
+  - echo b
+- label: Direct Array
+  command:
+  - echo x
+  - echo y

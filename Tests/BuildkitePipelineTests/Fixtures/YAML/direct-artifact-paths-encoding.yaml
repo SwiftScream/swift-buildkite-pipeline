@@ -1,0 +1,4 @@
+steps:
+- label: Artifacts
+  command: echo artifacts
+  artifact_paths: build/**/*.xcresult;build/**/*.zip

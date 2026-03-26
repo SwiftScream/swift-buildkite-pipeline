@@ -1,0 +1,11 @@
+env:
+  B: '2'
+  A: '1'
+  C: '3'
+agents:
+  zeta: z
+  queue: ios2
+  alpha: a
+steps:
+- label: No-op
+  command: echo ok

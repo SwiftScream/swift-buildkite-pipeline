@@ -1,0 +1,11 @@
+env:
+  CI: '1'
+agents:
+  queue: ios2
+notify:
+- email: direct@example.com
+meta_data:
+  owner: platform
+priority: 11
+steps:
+- wait: null

@@ -1,0 +1,8 @@
+steps:
+- label: Integration
+  depends_on:
+  - build
+  - lint
+  - step: flaky
+    allow_failure: true
+  command: swift test --filter Integration

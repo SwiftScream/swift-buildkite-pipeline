@@ -1,0 +1,7 @@
+meta_data:
+  B: '2'
+  A: '1'
+  C: '3'
+steps:
+- label: No-op
+  command: echo ok

@@ -1,0 +1,18 @@
+steps:
+- block: Release to production?
+  key: release-gate
+  fields:
+  - key: release_note
+    text: Release note
+    required: true
+  - key: env
+    select: Environment
+    options:
+    - label: Staging
+      value: staging
+    - label: Production
+      value: production
+    required: true
+  prompt: Only release from green builds
+- input: Who is approving this release?
+  key: approver

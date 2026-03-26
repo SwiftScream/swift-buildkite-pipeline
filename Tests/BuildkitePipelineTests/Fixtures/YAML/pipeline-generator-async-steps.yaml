@@ -1,0 +1,5 @@
+steps:
+- label: Lint
+  command: echo Lint
+- label: Tests
+  command: echo Tests
