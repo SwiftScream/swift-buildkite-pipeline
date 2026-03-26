@@ -2,12 +2,13 @@
 
 BuildkitePipeline is an ergonomic Swift DSL for generating Buildkite pipelines.
 
-It combines:
-- Swift result builders for human-friendly declarations
-- An Encodable-backed schema model
-- YAML serialization via [Yams](https://github.com/jpsim/Yams)
+[![CI](https://github.com/SwiftScream/swift-buildkite-pipeline/actions/workflows/ci.yml/badge.svg)](https://github.com/SwiftScream/swift-buildkite-pipeline/actions/workflows/ci.yml)
+[![Codecov branch](https://img.shields.io/codecov/c/github/SwiftScream/swift-buildkite-pipeline/master.svg)](https://codecov.io/gh/SwiftScream/swift-buildkite-pipeline/branch/master)
 
-The goal is to let you author Buildkite pipelines in strongly typed Swift, while still producing Buildkite-native YAML.
+[![](https://img.shields.io/endpoint?url=https%3A%2F%2Fswiftpackageindex.com%2Fapi%2Fpackages%2FSwiftScream%2Fswift-buildkite-pipeline%2Fbadge%3Ftype%3Dswift-versions)](https://swiftpackageindex.com/SwiftScream/swift-buildkite-pipeline)
+[![](https://img.shields.io/endpoint?url=https%3A%2F%2Fswiftpackageindex.com%2Fapi%2Fpackages%2FSwiftScream%2Fswift-buildkite-pipeline%2Fbadge%3Ftype%3Dplatforms)](https://swiftpackageindex.com/SwiftScream/swift-buildkite-pipeline)
+
+[![license](https://img.shields.io/github/license/SwiftScream/swift-buildkite-pipeline.svg)](https://raw.githubusercontent.com/SwiftScream/swift-buildkite-pipeline/master/LICENSE) [![GitHub release](https://img.shields.io/github/release/SwiftScream/swift-buildkite-pipeline.svg)](https://github.com/SwiftScream/swift-buildkite-pipeline/releases/latest)
 
 ## Installation
 
