@@ -24,6 +24,7 @@ let package = Package(
             dependencies: [
                 .product(name: "Yams", package: "Yams"),
             ],
+            resources: [.process("PrivacyInfo.xcprivacy")],
         ),
         .testTarget(
             name: "BuildkitePipelineTests",
