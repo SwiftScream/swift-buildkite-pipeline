@@ -1,0 +1,11 @@
+--exclude .build
+
+# rules
+--disable andOperator
+--disable preferKeyPath
+--disable wrapMultilineStatementBraces
+--disable redundantSendable
+
+# format options
+--nospaceoperators ..<, ...
+--patternlet inline
