@@ -1,0 +1,36 @@
+name: Lint
+permissions:
+  contents: read
+  pull-requests: write
+
+on:
+  push:
+    branches: [ "master" ]
+  pull_request:
+    branches: [ "master" ]
+
+jobs:
+  SwiftLint:
+    runs-on: macos-latest
+    steps:
+    - uses: actions/checkout@v6
+    - uses: irgaly/setup-mint@v1
+    - name: SwiftLint
+      run: mint run swiftlint --strict
+  SwiftFormat:
+    runs-on: macos-latest
+    needs: SwiftLint
+    steps:
+    - uses: actions/checkout@v6
+    - uses: irgaly/setup-mint@v1
+    - name: SwiftFormat Lint
+      run: mint run swiftformat --lint .
+  Docc:
+    runs-on: macos-latest
+    steps:
+    - uses: actions/checkout@v6
+    - uses: swift-actions/setup-swift@v3
+      with:
+        swift-version: "6.2"
+    - name: Swift-Docc Validate
+      run: swift package generate-documentation --target BuildkitePipeline --analyze --warnings-as-errors
