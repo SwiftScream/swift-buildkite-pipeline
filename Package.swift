@@ -7,6 +7,9 @@ let package = Package(
     name: "swift-buildkite-pipeline",
     platforms: [
         .macOS(.v13),
+        .iOS(.v13),
+        .tvOS(.v13),
+        .watchOS(.v6),
     ],
     products: [
         .library(
