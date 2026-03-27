@@ -166,8 +166,7 @@ private extension StepTemplate {
 
     // swiftlint:disable:next function_body_length cyclomatic_complexity
     func apply(to step: inout CommandStepModel) {
-        var defaultsFromAttributes = CommandStepModel()
-        applyStepAttributes(attributes, to: &defaultsFromAttributes)
+        let defaultsFromAttributes = commandStepModel(from: attributes)
 
         if step.command == nil {
             step.command = defaultsFromAttributes.command
