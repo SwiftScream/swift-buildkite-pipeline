@@ -1,6 +1,6 @@
 # Buildkite Pipeline
 
-BuildkitePipeline is an ergonomic Swift DSL for generating Buildkite pipelines.
+An ergonomic Swift DSL for generating [Buildkite](https://buildkite.com/platform/) pipelines.
 
 [![CI](https://github.com/SwiftScream/swift-buildkite-pipeline/actions/workflows/ci.yml/badge.svg)](https://github.com/SwiftScream/swift-buildkite-pipeline/actions/workflows/ci.yml)
 [![Codecov branch](https://img.shields.io/codecov/c/github/SwiftScream/swift-buildkite-pipeline/master.svg)](https://codecov.io/gh/SwiftScream/swift-buildkite-pipeline/branch/master)
