@@ -2,6 +2,65 @@
 import Testing
 
 @Test
+func `Command step builder aggregates command attributes and normalizes cardinality`() {
+    let pipeline = Pipeline {
+        Step("No Command Attribute") {
+            Agent(queue: "ios2")
+        }
+
+        Step("Single Command From Array Attribute") {
+            Command(["echo one"])
+        }
+
+        Step("Multiple Commands Across Attributes") {
+            Command("echo two")
+            Command("echo three")
+        }
+
+        Step("Mixed Command Attributes Flatten In Order") {
+            Command("echo four")
+            Command(["echo five", "echo six"])
+            Command()
+        }
+
+        Step("Only Empty Command Attributes") {
+            Command()
+            Command([])
+        }
+    }
+
+    guard case .command(let first) = pipeline.steps[0].model else {
+        Issue.record("Expected first step to be command")
+        return
+    }
+    #expect(first.command == nil)
+
+    guard case .command(let second) = pipeline.steps[1].model else {
+        Issue.record("Expected second step to be command")
+        return
+    }
+    #expect(second.command == .single("echo one"))
+
+    guard case .command(let third) = pipeline.steps[2].model else {
+        Issue.record("Expected third step to be command")
+        return
+    }
+    #expect(third.command == .multiple(["echo two", "echo three"]))
+
+    guard case .command(let fourth) = pipeline.steps[3].model else {
+        Issue.record("Expected fourth step to be command")
+        return
+    }
+    #expect(fourth.command == .multiple(["echo four", "echo five", "echo six"]))
+
+    guard case .command(let fifth) = pipeline.steps[4].model else {
+        Issue.record("Expected fifth step to be command")
+        return
+    }
+    #expect(fifth.command == nil)
+}
+
+@Test
 func `Command step direct initializers and modifiers cover remaining overloads`() {
     let directStringKey = StepKey("direct-string")
     let directArrayKey = StepKey("direct-array")

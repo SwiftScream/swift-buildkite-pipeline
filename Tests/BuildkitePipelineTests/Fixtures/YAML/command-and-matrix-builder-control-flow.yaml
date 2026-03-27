@@ -1,6 +1,8 @@
 steps:
 - label: Command Builder Coverage
-  command: echo command-second
+  command:
+  - echo command-first
+  - echo command-second
   agents:
     role: coverage
   env:
