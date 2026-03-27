@@ -335,11 +335,14 @@ private func makeCommandStep(
     return CommandStep(model: step)
 }
 
+// swiftlint:disable:next cyclomatic_complexity
 func applyStepAttributes(_ attributes: [CommandStepAttribute], to step: inout CommandStepModel) {
+    var collectedCommands: [String] = []
+
     for attribute in attributes {
         switch attribute {
         case .command(let command):
-            step.command = command
+            collectedCommands.append(contentsOf: command.values)
         case .artifactPath(let path):
             appendArtifactPath(path, to: &step)
         case .plugin(let plugin):
@@ -361,6 +364,15 @@ func applyStepAttributes(_ attributes: [CommandStepAttribute], to step: inout Co
             notify.append(notification)
             step.notify = notify
         }
+    }
+
+    switch collectedCommands.count {
+    case 0:
+        step.command = nil
+    case 1:
+        step.command = .single(collectedCommands[0])
+    default:
+        step.command = .multiple(collectedCommands)
     }
 }
 
