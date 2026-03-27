@@ -12,8 +12,8 @@ public struct CommandStep: Equatable, Sendable, PipelineStepConvertible {
 
 /// Creates a command step using the result-builder DSL.
 public func Step(_ label: String? = nil, @CommandStepBuilder _ content: () -> [CommandStepAttribute]) -> CommandStep {
-    var step = CommandStepModel(label: label)
-    applyStepAttributes(content(), to: &step)
+    var step = commandStepModel(from: content())
+    step.label = label
     return CommandStep(model: step)
 }
 
@@ -336,7 +336,8 @@ private func makeCommandStep(
 }
 
 // swiftlint:disable:next cyclomatic_complexity
-func applyStepAttributes(_ attributes: [CommandStepAttribute], to step: inout CommandStepModel) {
+func commandStepModel(from attributes: [CommandStepAttribute]) -> CommandStepModel {
+    var step = CommandStepModel()
     var collectedCommands: [String] = []
 
     for attribute in attributes {
@@ -374,6 +375,8 @@ func applyStepAttributes(_ attributes: [CommandStepAttribute], to step: inout Co
     default:
         step.command = .multiple(collectedCommands)
     }
+
+    return step
 }
 
 private func appendArtifactPath(_ path: String, to step: inout CommandStepModel) {
