@@ -1,0 +1,6 @@
+steps:
+- label: Build
+  key: build
+  command: swift build
+- block: ''
+  depends_on: build
