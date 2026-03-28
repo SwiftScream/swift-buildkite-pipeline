@@ -261,7 +261,8 @@ struct BlockStepModel: Encodable, Equatable, Sendable {
             try container.encode(block, forKey: .block)
         } else {
             // Nameless block with additional attributes retains explicit block identity.
-            try container.encodeNil(forKey: .block)
+            // Buildkite expects `block` to be a string in object form.
+            try container.encode("", forKey: .block)
         }
 
         try container.encodeIfPresent(key, forKey: .key)

@@ -581,6 +581,23 @@ func `Nameless block step encodes as scalar marker`() throws {
 }
 
 @Test
+func `Nameless block step with attributes encodes block as empty string`() throws {
+    let build = StepKey("build")
+
+    let pipeline = Pipeline {
+        Step("Build") {
+            Command("swift build")
+        }
+        .key(build)
+
+        Block()
+            .dependsOn(build)
+    }
+
+    try assertPipelineYAMLFixture(pipeline, fixtureName: "nameless-block-with-attributes-encoding")
+}
+
+@Test
 func `Trigger step with build payload`() throws {
     let pipeline = Pipeline {
         Trigger("deploy-pipeline")
