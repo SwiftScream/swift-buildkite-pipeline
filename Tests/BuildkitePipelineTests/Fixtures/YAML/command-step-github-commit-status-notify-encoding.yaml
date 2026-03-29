@@ -1,0 +1,6 @@
+steps:
+- label: Notify Coverage
+  command: echo notify
+  notify:
+  - github_commit_status
+  - github_check
