@@ -510,6 +510,22 @@ func `Direct initializers accept typed StepKey values`() throws {
 }
 
 @Test
+func `Typed key direct initializer supports optional command overload`() throws {
+    let optionalCommand: String? = "echo typed-optional"
+    let typedKey = StepKey("typed-optional-key")
+
+    let pipeline = Pipeline {
+        Step(
+            label: "Typed Optional",
+            command: optionalCommand,
+            key: typedKey,
+        )
+    }
+
+    try assertPipelineYAMLFixture(pipeline, fixtureName: "typed-step-key-optional-command-overload")
+}
+
+@Test
 func `Dependencies support typed keys and per-edge allow_failure`() throws {
     let build = StepKey("build")
     let lint = StepKey("lint")
@@ -655,6 +671,22 @@ func `Retry soft_fail depends_on matrix and notify encoding`() throws {
     }
 
     try assertPipelineYAMLFixture(pipeline, fixtureName: "retry-soft-fail-depends-on-matrix-and-notify-encoding")
+}
+
+@Test
+func `Command step notify encodes github_commit_status selector`() throws {
+    let pipeline = Pipeline {
+        Step("Notify Coverage") {
+            Command("echo notify")
+            StepNotifyGitHubCommitStatus()
+            StepNotifyGitHubCheck()
+        }
+    }
+
+    try assertPipelineYAMLFixture(
+        pipeline,
+        fixtureName: "command-step-github-commit-status-notify-encoding",
+    )
 }
 
 @Test

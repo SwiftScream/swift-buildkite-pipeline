@@ -1,0 +1,4 @@
+steps:
+- label: Typed Optional
+  key: typed-optional-key
+  command: echo typed-optional
