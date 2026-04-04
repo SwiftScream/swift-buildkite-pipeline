@@ -85,9 +85,17 @@ swift test
 ./.scripts/validate-pipeline-fixtures.sh
 ```
 
+- After changing Swift code, run the same lint/format checks used in CI:
+
+```bash
+mint run swiftlint --strict
+mint run swiftformat --lint .
+```
+
 ## Guidance For AI Coding Agents
 
 - Prefer extending existing model/DSL patterns over introducing parallel abstractions.
+- After changing Swift source or Swift tests, run `mint run swiftlint --strict` and `mint run swiftformat --lint .` before finishing.
 - When adding a new field:
   1. Add model support in `Model/`.
   2. Add DSL surface in `DSL/` (builder attribute or step modifier as appropriate).
