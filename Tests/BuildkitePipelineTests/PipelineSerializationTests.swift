@@ -893,7 +893,7 @@ func `Wait step encoding`() throws {
 }
 
 @Test
-func `Unnamed block dependency sources use standard auto key numbering`() throws {
+func `Unnamed blocks derive keys from a single downstream step`() throws {
     let pipeline = Pipeline {
         Step("Build") {
             Command("swift build")
@@ -915,6 +915,31 @@ func `Unnamed block dependency sources use standard auto key numbering`() throws
     }
 
     try assertPipelineYAMLFixture(pipeline, fixtureName: "unnamed-block-auto-key-numbering")
+}
+
+@Test
+func `Unnamed blocks fall back to standard auto keys for multiple downstream steps`() throws {
+    let pipeline = Pipeline {
+        Step("Build") {
+            Command("swift build")
+        }
+        .then {
+            Block().then {
+                Step("Package") {
+                    Command("echo package")
+                }
+
+                Step("Upload") {
+                    Command("echo upload")
+                }
+            }
+        }
+    }
+
+    try assertPipelineYAMLFixture(
+        pipeline,
+        fixtureName: "unnamed-block-falls-back-to-auto-key-for-multiple-targets",
+    )
 }
 
 @Test

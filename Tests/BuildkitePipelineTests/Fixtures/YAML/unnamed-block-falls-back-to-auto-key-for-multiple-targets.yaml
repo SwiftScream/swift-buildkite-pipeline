@@ -3,15 +3,11 @@ steps:
   key: build
   command: swift build
 - block: ''
-  key: block_package
+  key: _auto
   depends_on: build
 - label: Package
-  key: package
-  depends_on: block_package
+  depends_on: _auto
   command: echo package
-- block: ''
-  key: block_upload
-  depends_on: package
 - label: Upload
-  depends_on: block_upload
+  depends_on: _auto
   command: echo upload

@@ -54,7 +54,10 @@ public struct PipelineFragment: Equatable, Sendable {
         for sourceNodeID in sourceNodeIDs {
             if materializedModels[sourceNodeID].stepKey == nil {
                 let key = nextAutoDependencyKey(
-                    preferredBase: materializedModels[sourceNodeID].autoDependencyKeyBase,
+                    preferredBase: preferredAutoDependencyKeyBase(
+                        for: sourceNodeID,
+                        models: materializedModels,
+                    ),
                     usedKeys: &usedKeys,
                 )
                 materializedModels[sourceNodeID] = materializedModels[sourceNodeID].settingStepKey(key)
@@ -207,6 +210,31 @@ extension PipelineFragment {
 }
 
 private extension PipelineFragment {
+    func preferredAutoDependencyKeyBase(for sourceNodeID: Int, models: [StepModel]) -> String? {
+        if let directBase = models[sourceNodeID].autoDependencyKeyBase {
+            return directBase
+        }
+
+        guard case .block = models[sourceNodeID] else {
+            return nil
+        }
+
+        let downstreamTargetIDs = orderedUnique(
+            edges.compactMap { targetNodeID, sources in
+                sources.contains(sourceNodeID) ? targetNodeID : nil
+            }
+            .sorted(),
+        )
+
+        guard downstreamTargetIDs.count == 1, let targetNodeID = downstreamTargetIDs.first else {
+            return nil
+        }
+
+        let targetModel = models[targetNodeID]
+        let targetBase = targetModel.stepKey ?? targetModel.autoDependencyKeyBase
+        return targetBase.map { "block_\($0)" }
+    }
+
     func resolvedEntryNodeIDs() -> [Int] {
         let nodesWithIncomingEdges = Set(edges.keys)
         return nodes.indices.filter { !nodesWithIncomingEdges.contains($0) }
