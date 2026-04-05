@@ -1,12 +1,12 @@
 import Foundation
 
 /// A command step.
-public struct CommandStep: Equatable, Sendable, PipelineStepConvertible {
+public struct CommandStep: Equatable, Sendable, PipelineFragmentConvertible {
     var model: CommandStepModel
 
-    /// Returns this value as an erased pipeline step.
-    public var pipelineStep: PipelineStep {
-        PipelineStep(.command(model))
+    /// Returns this value as a composable fragment.
+    public var pipelineFragment: PipelineFragment {
+        PipelineFragment(.command(model))
     }
 }
 

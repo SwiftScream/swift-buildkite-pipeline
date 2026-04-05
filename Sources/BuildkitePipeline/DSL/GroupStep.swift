@@ -1,12 +1,12 @@
 import Foundation
 
 /// A group step (`group`).
-public struct GroupStep: Equatable, Sendable, PipelineStepConvertible {
+public struct GroupStep: Equatable, Sendable, PipelineFragmentConvertible {
     var model: GroupStepModel
 
-    /// Returns this value as an erased pipeline step.
-    public var pipelineStep: PipelineStep {
-        PipelineStep(.group(model))
+    /// Returns this value as a composable fragment.
+    public var pipelineFragment: PipelineFragment {
+        PipelineFragment(.group(model))
     }
 }
 
@@ -19,9 +19,9 @@ public func Group(
     dependsOn: [StepDependency]? = nil,
     allowDependencyFailure: Bool? = nil,
     notify: [NotificationRule]? = nil,
-    @PipelineStepsBuilder _ content: () -> [PipelineStep],
+    @PipelineStepsBuilder _ content: () -> PipelineFragment,
 ) -> GroupStep {
-    let steps = content().map(\.model)
+    let steps = content().materializedModels()
     let group = GroupStepModel(
         group: label,
         key: key,
@@ -45,7 +45,7 @@ public func Group(
     dependsOn: [StepDependency]? = nil,
     allowDependencyFailure: Bool? = nil,
     notify: [NotificationRule]? = nil,
-    @PipelineStepsBuilder _ content: () -> [PipelineStep],
+    @PipelineStepsBuilder _ content: () -> PipelineFragment,
 ) -> GroupStep {
     Group(
         label,

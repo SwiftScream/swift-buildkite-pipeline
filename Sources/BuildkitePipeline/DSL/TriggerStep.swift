@@ -1,12 +1,12 @@
 import Foundation
 
 /// A trigger step (`trigger`).
-public struct TriggerStep: Equatable, Sendable, PipelineStepConvertible {
+public struct TriggerStep: Equatable, Sendable, PipelineFragmentConvertible {
     var model: TriggerStepModel
 
-    /// Returns this value as an erased pipeline step.
-    public var pipelineStep: PipelineStep {
-        PipelineStep(.trigger(model))
+    /// Returns this value as a composable fragment.
+    public var pipelineFragment: PipelineFragment {
+        PipelineFragment(.trigger(model))
     }
 }
 

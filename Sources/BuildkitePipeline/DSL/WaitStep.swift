@@ -1,12 +1,12 @@
 import Foundation
 
 /// A wait step (`wait`).
-public struct WaitStep: Equatable, Sendable, PipelineStepConvertible {
+public struct WaitStep: Equatable, Sendable, PipelineFragmentConvertible {
     var model: WaitStepModel
 
-    /// Returns this value as an erased pipeline step.
-    public var pipelineStep: PipelineStep {
-        PipelineStep(.wait(model))
+    /// Returns this value as a composable fragment.
+    public var pipelineFragment: PipelineFragment {
+        PipelineFragment(.wait(model))
     }
 }
 

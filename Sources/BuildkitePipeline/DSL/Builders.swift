@@ -2,20 +2,20 @@ import Foundation
 
 /// Intermediate content container used by `PipelineBuilder`.
 public struct PipelineContent {
-    var steps: [PipelineStep]
+    var fragments: [PipelineFragment]
     var globalEnv: [GlobalEnvironmentVariable]
     var defaultAgents: [DefaultAgentEntry]
     var metadata: [MetadataEntry]
     var notify: [NotificationRule]
 
     init(
-        steps: [PipelineStep] = [],
+        fragments: [PipelineFragment] = [],
         globalEnv: [GlobalEnvironmentVariable] = [],
         defaultAgents: [DefaultAgentEntry] = [],
         metadata: [MetadataEntry] = [],
         notify: [NotificationRule] = [],
     ) {
-        self.steps = steps
+        self.fragments = fragments
         self.globalEnv = globalEnv
         self.defaultAgents = defaultAgents
         self.metadata = metadata
@@ -24,7 +24,7 @@ public struct PipelineContent {
 
     static func + (lhs: PipelineContent, rhs: PipelineContent) -> PipelineContent {
         PipelineContent(
-            steps: lhs.steps + rhs.steps,
+            fragments: lhs.fragments + rhs.fragments,
             globalEnv: lhs.globalEnv + rhs.globalEnv,
             defaultAgents: lhs.defaultAgents + rhs.defaultAgents,
             metadata: lhs.metadata + rhs.metadata,
@@ -42,13 +42,13 @@ public enum PipelineBuilder {
     }
 
     /// Builds and returns a partial result for the enclosing result builder.
-    public static func buildExpression(_ expression: some PipelineStepConvertible) -> PipelineContent {
-        PipelineContent(steps: [expression.pipelineStep])
+    public static func buildExpression(_ expression: some PipelineFragmentConvertible) -> PipelineContent {
+        PipelineContent(fragments: [expression.pipelineFragment])
     }
 
     /// Builds and returns a partial result for the enclosing result builder.
-    public static func buildExpression(_ expression: [PipelineStep]) -> PipelineContent {
-        PipelineContent(steps: expression)
+    public static func buildExpression(_ expression: PipelineFragment) -> PipelineContent {
+        PipelineContent(fragments: [expression])
     }
 
     /// Builds and returns a partial result for the enclosing result builder.
@@ -111,38 +111,38 @@ public enum PipelineBuilder {
 @resultBuilder
 public enum PipelineStepsBuilder {
     /// Builds and returns a partial result for the enclosing result builder.
-    public static func buildBlock(_ components: [PipelineStep]...) -> [PipelineStep] {
-        components.flatMap { $0 }
+    public static func buildBlock(_ components: PipelineFragment...) -> PipelineFragment {
+        components.reduce(.empty, +)
     }
 
     /// Builds and returns a partial result for the enclosing result builder.
-    public static func buildExpression(_ expression: some PipelineStepConvertible) -> [PipelineStep] {
-        [expression.pipelineStep]
+    public static func buildExpression(_ expression: some PipelineFragmentConvertible) -> PipelineFragment {
+        expression.pipelineFragment
     }
 
     /// Builds and returns a partial result for the enclosing result builder.
-    public static func buildExpression(_ expression: [PipelineStep]) -> [PipelineStep] {
+    public static func buildExpression(_ expression: PipelineFragment) -> PipelineFragment {
         expression
     }
 
     /// Builds and returns a partial result for the enclosing result builder.
-    public static func buildOptional(_ component: [PipelineStep]?) -> [PipelineStep] {
-        component ?? []
+    public static func buildOptional(_ component: PipelineFragment?) -> PipelineFragment {
+        component ?? .empty
     }
 
     /// Builds and returns a partial result for the enclosing result builder.
-    public static func buildEither(first component: [PipelineStep]) -> [PipelineStep] {
+    public static func buildEither(first component: PipelineFragment) -> PipelineFragment {
         component
     }
 
     /// Builds and returns a partial result for the enclosing result builder.
-    public static func buildEither(second component: [PipelineStep]) -> [PipelineStep] {
+    public static func buildEither(second component: PipelineFragment) -> PipelineFragment {
         component
     }
 
     /// Builds and returns a partial result for the enclosing result builder.
-    public static func buildArray(_ components: [[PipelineStep]]) -> [PipelineStep] {
-        components.flatMap { $0 }
+    public static func buildArray(_ components: [PipelineFragment]) -> PipelineFragment {
+        components.reduce(.empty, +)
     }
 }
 

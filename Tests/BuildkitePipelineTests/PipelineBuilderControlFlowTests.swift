@@ -3,16 +3,15 @@ import Foundation
 import Testing
 
 @Test
-func `PipelineBuilder and PipelineStepsBuilder support control flow and array expressions`() throws {
+func `PipelineBuilder and PipelineStepsBuilder support control flow and fragment expressions`() throws {
     let alwaysTrue = Date().timeIntervalSinceReferenceDate > 0
     let alwaysFalse = Date().timeIntervalSinceReferenceDate < 0
     let optionalFlag = ProcessInfo.processInfo.environment["BUILDKITE_PIPELINE_OPTIONAL"] == "1"
 
-    let extraTopLevelSteps: [PipelineStep] = [
-        Step("Top Array Step") {
-            Command("echo top-array")
-        }.pipelineStep,
-    ]
+    let extraTopLevelSteps = Step("Top Array Step") {
+        Command("echo top-array")
+    }
+    .pipelineFragment
 
     let sharedEnv = GlobalEnv([
         "SHARED_A": "1",
@@ -107,11 +106,10 @@ func `PipelineBuilder and PipelineStepsBuilder support control flow and array ex
                 }
             }
 
-            let childArray: [PipelineStep] = [
-                Step("Child Array Step") {
-                    Command("echo child-array")
-                }.pipelineStep,
-            ]
+            let childArray = Step("Child Array Step") {
+                Command("echo child-array")
+            }
+            .pipelineFragment
             childArray
         }
     }

@@ -48,9 +48,9 @@ public struct StepTemplate: Equatable, Sendable {
 /// per-step values override template values for conflicts (for example duplicate env keys).
 public func Steps(
     template: StepTemplate = StepTemplate(),
-    @PipelineStepsBuilder _ content: () -> [PipelineStep],
-) -> [PipelineStep] {
-    content().map(template.applying(to:))
+    @PipelineStepsBuilder _ content: () -> PipelineFragment,
+) -> PipelineFragment {
+    content().mapStepModels(template.applying(to:))
 }
 
 public extension StepTemplate {
@@ -147,10 +147,6 @@ public extension StepTemplate {
 }
 
 private extension StepTemplate {
-    func applying(to step: PipelineStep) -> PipelineStep {
-        PipelineStep(applying(to: step.model))
-    }
-
     func applying(to model: StepModel) -> StepModel {
         switch model {
         case .command(var command):

@@ -79,7 +79,7 @@ func `PipelineGenerator async steps support`() async throws {
     let pipeline = try await ExampleAsyncGenerator.makePipeline()
     let yaml = try await ExampleAsyncGenerator.generateYAML()
 
-    #expect(pipeline.steps.count == 2)
+    #expect(pipeline.materializedStepModels.count == 2)
     try assertYAMLFixture(yaml, fixtureName: "pipeline-generator-async-steps")
 }
 
@@ -393,9 +393,9 @@ func `Step templates apply defaults and keep step-local precedence`() {
         }
     }
 
-    #expect(pipeline.steps.count == 3)
+    #expect(pipeline.materializedStepModels.count == 3)
 
-    guard case .command(let first) = pipeline.steps[0].model else {
+    guard case .command(let first) = pipeline.materializedStepModels[0] else {
         #expect(Bool(false))
         return
     }
@@ -408,7 +408,7 @@ func `Step templates apply defaults and keep step-local precedence`() {
     #expect(first.timeoutInMinutes == 15)
     #expect(first.priority == 7)
 
-    guard case .command(let second) = pipeline.steps[1].model else {
+    guard case .command(let second) = pipeline.materializedStepModels[1] else {
         #expect(Bool(false))
         return
     }
@@ -418,7 +418,7 @@ func `Step templates apply defaults and keep step-local precedence`() {
     #expect(second.timeoutInMinutes == 20)
     #expect(second.priority == 7)
 
-    guard case .wait = pipeline.steps[2].model else {
+    guard case .wait = pipeline.materializedStepModels[2] else {
         #expect(Bool(false))
         return
     }
@@ -444,7 +444,7 @@ func `Step templates apply recursively to command steps nested in groups`() {
         }
     }
 
-    guard case .group(let group) = pipeline.steps[0].model else {
+    guard case .group(let group) = pipeline.materializedStepModels[0] else {
         #expect(Bool(false))
         return
     }

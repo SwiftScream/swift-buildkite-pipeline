@@ -29,31 +29,31 @@ func `Command step builder aggregates command attributes and normalizes cardinal
         }
     }
 
-    guard case .command(let first) = pipeline.steps[0].model else {
+    guard case .command(let first) = pipeline.materializedStepModels[0] else {
         Issue.record("Expected first step to be command")
         return
     }
     #expect(first.command == nil)
 
-    guard case .command(let second) = pipeline.steps[1].model else {
+    guard case .command(let second) = pipeline.materializedStepModels[1] else {
         Issue.record("Expected second step to be command")
         return
     }
     #expect(second.command == .single("echo one"))
 
-    guard case .command(let third) = pipeline.steps[2].model else {
+    guard case .command(let third) = pipeline.materializedStepModels[2] else {
         Issue.record("Expected third step to be command")
         return
     }
     #expect(third.command == .multiple(["echo two", "echo three"]))
 
-    guard case .command(let fourth) = pipeline.steps[3].model else {
+    guard case .command(let fourth) = pipeline.materializedStepModels[3] else {
         Issue.record("Expected fourth step to be command")
         return
     }
     #expect(fourth.command == .multiple(["echo four", "echo five", "echo six"]))
 
-    guard case .command(let fifth) = pipeline.steps[4].model else {
+    guard case .command(let fifth) = pipeline.materializedStepModels[4] else {
         Issue.record("Expected fifth step to be command")
         return
     }
@@ -96,21 +96,21 @@ func `Command step direct initializers and modifiers cover remaining overloads`(
         modified
     }
 
-    guard case .command(let first) = pipeline.steps[0].model else {
+    guard case .command(let first) = pipeline.materializedStepModels[0] else {
         Issue.record("Expected first step to be command")
         return
     }
     #expect(first.key == directStringKey.rawValue)
     #expect(first.command == .single("echo direct-string"))
 
-    guard case .command(let second) = pipeline.steps[1].model else {
+    guard case .command(let second) = pipeline.materializedStepModels[1] else {
         Issue.record("Expected second step to be command")
         return
     }
     #expect(second.key == directArrayKey.rawValue)
     #expect(second.command == .multiple(["echo one", "echo two"]))
 
-    guard case .command(let third) = pipeline.steps[2].model else {
+    guard case .command(let third) = pipeline.materializedStepModels[2] else {
         Issue.record("Expected third step to be command")
         return
     }
@@ -156,7 +156,7 @@ func `Group step modifiers cover typed keys dependencies and notify builder`() {
     }
 
     let pipeline = Pipeline { group }
-    guard case .group(let model) = pipeline.steps[0].model else {
+    guard case .group(let model) = pipeline.materializedStepModels[0] else {
         Issue.record("Expected group step")
         return
     }
@@ -199,7 +199,7 @@ func `Trigger step modifiers cover retry dependency and metadata helpers`() {
         .build(TriggerBuild(branch: "release", metadata: ["channel": "stable"]))
 
     let pipeline = Pipeline { trigger }
-    guard case .trigger(let model) = pipeline.steps[0].model else {
+    guard case .trigger(let model) = pipeline.materializedStepModels[0] else {
         Issue.record("Expected trigger step")
         return
     }
@@ -233,7 +233,7 @@ func `Wait step covers key-based dependencies and continue-on-failure modifier`(
     .allowDependencyFailure()
 
     let pipeline = Pipeline { wait }
-    guard case .wait(let model) = pipeline.steps[0].model else {
+    guard case .wait(let model) = pipeline.materializedStepModels[0] else {
         Issue.record("Expected wait step")
         return
     }
@@ -257,7 +257,7 @@ func `Block step typed modifiers cover dependency overloads`() {
         .allowDependencyFailure(false)
 
     let pipeline = Pipeline { block }
-    guard case .block(let model) = pipeline.steps[0].model else {
+    guard case .block(let model) = pipeline.materializedStepModels[0] else {
         Issue.record("Expected block step")
         return
     }

@@ -46,7 +46,7 @@ func `Step template modifiers and merge paths cover defaults and overrides`() {
         }
     }
 
-    guard case .command(let noLocal) = pipeline.steps[0].model else {
+    guard case .command(let noLocal) = pipeline.materializedStepModels[0] else {
         Issue.record("Expected first command step")
         return
     }
@@ -70,7 +70,7 @@ func `Step template modifiers and merge paths cover defaults and overrides`() {
     #expect(noLocal.concurrencyGroup == "template-group-2")
     #expect(noLocal.concurrencyMethod == .eager)
 
-    guard case .command(let withLocals) = pipeline.steps[1].model else {
+    guard case .command(let withLocals) = pipeline.materializedStepModels[1] else {
         Issue.record("Expected second command step")
         return
     }

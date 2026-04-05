@@ -20,8 +20,7 @@ func `Pipeline JSON rendering supports pretty and compact output`() throws {
 
 @Test
 func `Pipeline direct initializer and computed rendering accessors`() throws {
-    let erasedStep = Wait().pipelineStep
-    #expect(erasedStep.pipelineStep == erasedStep)
+    let directSteps = Wait().pipelineFragment
 
     let pipeline = Pipeline(
         env: ["CI": "1"],
@@ -29,7 +28,7 @@ func `Pipeline direct initializer and computed rendering accessors`() throws {
         notify: [NotifyEmail("direct@example.com")],
         metadata: ["owner": "platform"],
         priority: 11,
-        steps: [erasedStep],
+        fragment: directSteps,
     )
 
     #expect(pipeline.env?["CI"] == "1")

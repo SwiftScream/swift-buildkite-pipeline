@@ -1,23 +1,9 @@
 import Foundation
 
-/// A type-erased pipeline step used for serialization and storage.
-public struct PipelineStep: Equatable, Sendable, PipelineStepConvertible {
-    let model: StepModel
-
-    init(_ model: StepModel) {
-        self.model = model
-    }
-
-    /// Returns this value unchanged as a pipeline step.
-    public var pipelineStep: PipelineStep {
-        self
-    }
-}
-
-/// A value that can be converted into an erased `PipelineStep`.
-public protocol PipelineStepConvertible: Sendable {
-    /// Returns the erased pipeline step representation.
-    var pipelineStep: PipelineStep { get }
+/// A value that can be converted into a composable pipeline fragment.
+public protocol PipelineFragmentConvertible: Sendable {
+    /// Returns the fragment representation.
+    var pipelineFragment: PipelineFragment { get }
 }
 
 /// A Buildkite pipeline built with a Swift DSL.
@@ -44,8 +30,8 @@ public struct Pipeline: Equatable, Sendable {
     public let notify: [NotificationRule]?
     /// The default priority for steps without an explicit step priority.
     public let priority: Int?
-    /// The ordered list of pipeline steps.
-    public let steps: [PipelineStep]
+    /// The composed pipeline fragment.
+    public let fragment: PipelineFragment
 
     /// Creates a pipeline from a step builder.
     public init(
@@ -63,7 +49,7 @@ public struct Pipeline: Equatable, Sendable {
 
         notify = built.notify.isEmpty ? nil : built.notify
         priority = nil
-        steps = built.steps
+        fragment = PipelineFragment.concatenating(built.fragments)
     }
 
     /// Creates a pipeline from direct values.
@@ -73,14 +59,14 @@ public struct Pipeline: Equatable, Sendable {
         notify: [NotificationRule]? = nil,
         metadata: [String: String]? = nil,
         priority: Int? = nil,
-        steps: [PipelineStep],
+        fragment: PipelineFragment,
     ) {
         orderedEnv = env.map(OrderedKeyValuePairs<String>.init)
         orderedAgents = agents.map(OrderedKeyValuePairs<JSONValue>.init)
         orderedMetadata = metadata.map(OrderedKeyValuePairs<String>.init)
         self.notify = notify
         self.priority = priority
-        self.steps = steps
+        self.fragment = fragment
     }
 
     init(
@@ -89,14 +75,18 @@ public struct Pipeline: Equatable, Sendable {
         orderedMetadata: OrderedKeyValuePairs<String>? = nil,
         notify: [NotificationRule]? = nil,
         priority: Int? = nil,
-        steps: [PipelineStep],
+        fragment: PipelineFragment,
     ) {
         self.orderedEnv = orderedEnv
         self.orderedAgents = orderedAgents
         self.orderedMetadata = orderedMetadata
         self.notify = notify
         self.priority = priority
-        self.steps = steps
+        self.fragment = fragment
+    }
+
+    var materializedStepModels: [StepModel] {
+        fragment.materializedModels()
     }
 
     /// The underlying serializable model used for serialization.
@@ -107,7 +97,7 @@ public struct Pipeline: Equatable, Sendable {
             orderedMetadata: orderedMetadata,
             notify: notify,
             priority: priority,
-            steps: steps.map(\.model),
+            steps: materializedStepModels,
         )
     }
 
@@ -145,7 +135,7 @@ public extension Pipeline {
             orderedMetadata: orderedMetadata,
             notify: notify,
             priority: value,
-            steps: steps,
+            fragment: fragment,
         )
     }
 }

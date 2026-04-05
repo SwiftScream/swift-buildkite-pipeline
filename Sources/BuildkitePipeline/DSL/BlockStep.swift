@@ -50,12 +50,12 @@ public func Option(_ label: String, value: String) -> SelectOption {
 }
 
 /// A block/input step (`block`/`input`).
-public struct BlockStep: Equatable, Sendable, PipelineStepConvertible {
+public struct BlockStep: Equatable, Sendable, PipelineFragmentConvertible {
     var model: BlockStepModel
 
-    /// Returns this value as an erased pipeline step.
-    public var pipelineStep: PipelineStep {
-        PipelineStep(.block(model))
+    /// Returns this value as a composable fragment.
+    public var pipelineFragment: PipelineFragment {
+        PipelineFragment(.block(model))
     }
 }
 
