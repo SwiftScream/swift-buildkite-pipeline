@@ -48,7 +48,7 @@ public struct StepTemplate: Equatable, Sendable {
 /// per-step values override template values for conflicts (for example duplicate env keys).
 public func Steps(
     template: StepTemplate = StepTemplate(),
-    @PipelineStepsBuilder _ content: () -> PipelineFragment,
+    @PipelineFragmentBuilder _ content: () -> PipelineFragment,
 ) -> PipelineFragment {
     content().mapStepModels(template.applying(to:))
 }

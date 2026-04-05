@@ -109,7 +109,7 @@ public enum PipelineBuilder {
 
 /// Result builder used by APIs that accept nested pipeline steps.
 @resultBuilder
-public enum PipelineStepsBuilder {
+public enum PipelineFragmentBuilder {
     /// Builds and returns a partial result for the enclosing result builder.
     public static func buildBlock(_ components: PipelineFragment...) -> PipelineFragment {
         components.reduce(.empty, +)

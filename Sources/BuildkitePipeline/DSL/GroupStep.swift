@@ -19,7 +19,7 @@ public func Group(
     dependsOn: [StepDependency]? = nil,
     allowDependencyFailure: Bool? = nil,
     notify: [NotificationRule]? = nil,
-    @PipelineStepsBuilder _ content: () -> PipelineFragment,
+    @PipelineFragmentBuilder _ content: () -> PipelineFragment,
 ) -> GroupStep {
     let steps = content().materializedModels()
     let group = GroupStepModel(
@@ -45,7 +45,7 @@ public func Group(
     dependsOn: [StepDependency]? = nil,
     allowDependencyFailure: Bool? = nil,
     notify: [NotificationRule]? = nil,
-    @PipelineStepsBuilder _ content: () -> PipelineFragment,
+    @PipelineFragmentBuilder _ content: () -> PipelineFragment,
 ) -> GroupStep {
     Group(
         label,

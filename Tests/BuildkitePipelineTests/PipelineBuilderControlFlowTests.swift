@@ -3,7 +3,7 @@ import Foundation
 import Testing
 
 @Test
-func `PipelineBuilder and PipelineStepsBuilder support control flow and fragment expressions`() throws {
+func `PipelineBuilder and PipelineFragmentBuilder support control flow and fragment expressions`() throws {
     let alwaysTrue = Date().timeIntervalSinceReferenceDate > 0
     let alwaysFalse = Date().timeIntervalSinceReferenceDate < 0
     let optionalFlag = ProcessInfo.processInfo.environment["BUILDKITE_PIPELINE_OPTIONAL"] == "1"
