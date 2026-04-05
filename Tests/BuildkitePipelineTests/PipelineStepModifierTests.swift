@@ -29,31 +29,31 @@ func `Command step builder aggregates command attributes and normalizes cardinal
         }
     }
 
-    guard case .command(let first) = pipeline.materializedStepModels[0] else {
+    guard let first = pipeline.materializedStepModels[0].command else {
         Issue.record("Expected first step to be command")
         return
     }
     #expect(first.command == nil)
 
-    guard case .command(let second) = pipeline.materializedStepModels[1] else {
+    guard let second = pipeline.materializedStepModels[1].command else {
         Issue.record("Expected second step to be command")
         return
     }
     #expect(second.command == .single("echo one"))
 
-    guard case .command(let third) = pipeline.materializedStepModels[2] else {
+    guard let third = pipeline.materializedStepModels[2].command else {
         Issue.record("Expected third step to be command")
         return
     }
     #expect(third.command == .multiple(["echo two", "echo three"]))
 
-    guard case .command(let fourth) = pipeline.materializedStepModels[3] else {
+    guard let fourth = pipeline.materializedStepModels[3].command else {
         Issue.record("Expected fourth step to be command")
         return
     }
     #expect(fourth.command == .multiple(["echo four", "echo five", "echo six"]))
 
-    guard case .command(let fifth) = pipeline.materializedStepModels[4] else {
+    guard let fifth = pipeline.materializedStepModels[4].command else {
         Issue.record("Expected fifth step to be command")
         return
     }
@@ -96,28 +96,31 @@ func `Command step direct initializers and modifiers cover remaining overloads`(
         modified
     }
 
-    guard case .command(let first) = pipeline.materializedStepModels[0] else {
+    let firstStep = pipeline.materializedStepModels[0]
+    guard let first = firstStep.command else {
         Issue.record("Expected first step to be command")
         return
     }
-    #expect(first.key == directStringKey.rawValue)
+    #expect(firstStep.key == directStringKey.rawValue)
     #expect(first.command == .single("echo direct-string"))
 
-    guard case .command(let second) = pipeline.materializedStepModels[1] else {
+    let secondStep = pipeline.materializedStepModels[1]
+    guard let second = secondStep.command else {
         Issue.record("Expected second step to be command")
         return
     }
-    #expect(second.key == directArrayKey.rawValue)
+    #expect(secondStep.key == directArrayKey.rawValue)
     #expect(second.command == .multiple(["echo one", "echo two"]))
 
-    guard case .command(let third) = pipeline.materializedStepModels[2] else {
+    let thirdStep = pipeline.materializedStepModels[2]
+    guard let third = thirdStep.command else {
         Issue.record("Expected third step to be command")
         return
     }
     #expect(third.label == "Relabeled")
-    #expect(third.condition == "build.branch == \"main\"")
-    #expect(third.branches == "main")
-    #expect(third.allowDependencyFailure == true)
+    #expect(thirdStep.condition == "build.branch == \"main\"")
+    #expect(thirdStep.branches == "main")
+    #expect(thirdStep.allowDependencyFailure == true)
     #expect(third.concurrency == 2)
     #expect(third.concurrencyGroup == "mod")
     #expect(third.concurrencyMethod == .eager)
@@ -156,16 +159,17 @@ func `Group step modifiers cover typed keys dependencies and notify builder`() {
     }
 
     let pipeline = Pipeline { group }
-    guard case .group(let model) = pipeline.materializedStepModels[0] else {
+    let step = pipeline.materializedStepModels[0]
+    guard let model = step.group else {
         Issue.record("Expected group step")
         return
     }
 
-    #expect(model.key == "group-final")
-    #expect(model.condition == "build.branch == \"main\"")
-    #expect(model.branches == "main")
-    #expect(model.allowDependencyFailure == false)
-    #expect(model.dependsOn == .single(.key("dep-keys")))
+    #expect(step.key == "group-final")
+    #expect(step.condition == "build.branch == \"main\"")
+    #expect(step.branches == "main")
+    #expect(step.allowDependencyFailure == false)
+    #expect(step.dependsOn == .single(.key("dep-keys")))
     #expect(model.notify == [NotifyEmail("group@example.com")])
 }
 
@@ -199,17 +203,18 @@ func `Trigger step modifiers cover retry dependency and metadata helpers`() {
         .build(TriggerBuild(branch: "release", metadata: ["channel": "stable"]))
 
     let pipeline = Pipeline { trigger }
-    guard case .trigger(let model) = pipeline.materializedStepModels[0] else {
+    let step = pipeline.materializedStepModels[0]
+    guard let model = step.trigger else {
         Issue.record("Expected trigger step")
         return
     }
 
     #expect(model.label == "Deploy")
-    #expect(model.key == "deploy-key-typed")
-    #expect(model.condition == "build.branch == \"main\"")
-    #expect(model.branches == "main")
-    #expect(model.dependsOn == .single(.key("dep-keys")))
-    #expect(model.allowDependencyFailure == true)
+    #expect(step.key == "deploy-key-typed")
+    #expect(step.condition == "build.branch == \"main\"")
+    #expect(step.branches == "main")
+    #expect(step.dependsOn == .single(.key("dep-keys")))
+    #expect(step.allowDependencyFailure == true)
     #expect(model.async == false)
     #expect(model.softFail == .conditions([SoftFailCondition(exitStatus: 1), SoftFailCondition(exitStatus: 2)]))
     #expect(model.retry?.automatic == .rules([RetryRule(exitStatus: 9, limit: 3)]))
@@ -236,17 +241,18 @@ func `Wait step modifiers cover keys dependencies and continue-on-failure`() {
     .allowDependencyFailure()
 
     let pipeline = Pipeline { wait }
-    guard case .wait(let model) = pipeline.materializedStepModels[0] else {
+    let step = pipeline.materializedStepModels[0]
+    guard let model = step.wait else {
         Issue.record("Expected wait step")
         return
     }
 
-    #expect(model.key == "wait-final")
-    #expect(model.branches == "main")
+    #expect(step.key == "wait-final")
+    #expect(step.branches == "main")
     #expect(model.continueOnFailure == true)
-    #expect(model.condition == "build.branch == \"main\"")
-    #expect(model.allowDependencyFailure == true)
-    #expect(model.dependsOn == .multiple([.key("dep-key-1"), .key("dep-key-2")]))
+    #expect(step.condition == "build.branch == \"main\"")
+    #expect(step.allowDependencyFailure == true)
+    #expect(step.dependsOn == .multiple([.key("dep-key-1"), .key("dep-key-2")]))
 }
 
 @Test
@@ -261,14 +267,15 @@ func `Block step typed modifiers cover dependency overloads`() {
         .allowDependencyFailure(false)
 
     let pipeline = Pipeline { block }
-    guard case .block(let model) = pipeline.materializedStepModels[0] else {
+    let step = pipeline.materializedStepModels[0]
+    guard step.block != nil else {
         Issue.record("Expected block step")
         return
     }
 
-    #expect(model.key == "block-key")
-    #expect(model.condition == "build.branch == \"main\"")
-    #expect(model.branches == "main")
-    #expect(model.allowDependencyFailure == false)
-    #expect(model.dependsOn == .single(.key("dep-final")))
+    #expect(step.key == "block-key")
+    #expect(step.condition == "build.branch == \"main\"")
+    #expect(step.branches == "main")
+    #expect(step.allowDependencyFailure == false)
+    #expect(step.dependsOn == .single(.key("dep-final")))
 }

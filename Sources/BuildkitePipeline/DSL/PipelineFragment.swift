@@ -42,7 +42,7 @@ public struct PipelineFragment: Equatable, Sendable {
         }
 
         var materializedModels = nodes
-        var usedKeys = Set(materializedModels.compactMap(\.stepKey))
+        var usedKeys = Set(materializedModels.compactMap(\.key))
 
         var sourceNodeIDs: [Int] = []
         for targetNodeID in nodes.indices {
@@ -52,7 +52,7 @@ public struct PipelineFragment: Equatable, Sendable {
         }
         sourceNodeIDs = orderedUnique(sourceNodeIDs)
         for sourceNodeID in sourceNodeIDs {
-            if materializedModels[sourceNodeID].stepKey == nil {
+            if materializedModels[sourceNodeID].key == nil {
                 let key = nextAutoDependencyKey(
                     preferredBase: preferredAutoDependencyKeyBase(
                         for: sourceNodeID,
@@ -60,7 +60,7 @@ public struct PipelineFragment: Equatable, Sendable {
                     ),
                     usedKeys: &usedKeys,
                 )
-                materializedModels[sourceNodeID] = materializedModels[sourceNodeID].settingStepKey(key)
+                materializedModels[sourceNodeID].key = key
             }
         }
 
@@ -69,9 +69,9 @@ public struct PipelineFragment: Equatable, Sendable {
                 continue
             }
 
-            var combined = dependencies(from: materializedModels[targetNodeID].dependencyCondition)
+            var combined = dependencies(from: materializedModels[targetNodeID].dependsOn)
             for sourceID in sourceIDs {
-                guard let sourceKey = materializedModels[sourceID].stepKey else {
+                guard let sourceKey = materializedModels[sourceID].key else {
                     continue
                 }
 
@@ -81,9 +81,7 @@ public struct PipelineFragment: Equatable, Sendable {
                 }
             }
 
-            materializedModels[targetNodeID] = materializedModels[targetNodeID].settingDependencyCondition(
-                dependencyCondition(from: combined),
-            )
+            materializedModels[targetNodeID].dependsOn = dependencyCondition(from: combined)
         }
 
         return materializedModels
@@ -215,7 +213,7 @@ private extension PipelineFragment {
             return directBase
         }
 
-        guard case .block = models[sourceNodeID] else {
+        guard models[sourceNodeID].isBlock else {
             return nil
         }
 
@@ -231,7 +229,7 @@ private extension PipelineFragment {
         }
 
         let targetModel = models[targetNodeID]
-        let targetBase = targetModel.stepKey ?? targetModel.autoDependencyKeyBase
+        let targetBase = targetModel.key ?? targetModel.autoDependencyKeyBase
         return targetBase.map { "block_\($0)" }
     }
 
@@ -259,38 +257,16 @@ private extension PipelineFragment {
 }
 
 private extension StepModel {
-    var stepKey: String? {
-        switch self {
-        case .command(let model):
-            model.key
-        case .block(let model):
-            model.key
-        case .group(let model):
-            model.key
-        case .trigger(let model):
-            model.key
-        case .wait(let model):
-            model.key
+    var isBlock: Bool {
+        guard case .block = payload else {
+            return false
         }
-    }
 
-    var dependencyCondition: DependencyCondition? {
-        switch self {
-        case .command(let model):
-            model.dependsOn
-        case .wait(let model):
-            model.dependsOn
-        case .block(let model):
-            model.dependsOn
-        case .trigger(let model):
-            model.dependsOn
-        case .group(let model):
-            model.dependsOn
-        }
+        return true
     }
 
     var autoDependencyKeyBase: String? {
-        switch self {
+        switch payload {
         case .command(let model):
             sanitizedDependencyKeyBase(from: model.label)
         case .wait:
@@ -301,46 +277,6 @@ private extension StepModel {
             sanitizedDependencyKeyBase(from: model.label ?? model.trigger)
         case .group(let model):
             sanitizedDependencyKeyBase(from: model.group)
-        }
-    }
-
-    func settingStepKey(_ value: String) -> StepModel {
-        switch self {
-        case .command(var model):
-            model.key = value
-            return .command(model)
-        case .block(var model):
-            model.key = value
-            return .block(model)
-        case .group(var model):
-            model.key = value
-            return .group(model)
-        case .trigger(var model):
-            model.key = value
-            return .trigger(model)
-        case .wait(var model):
-            model.key = value
-            return .wait(model)
-        }
-    }
-
-    func settingDependencyCondition(_ value: DependencyCondition?) -> StepModel {
-        switch self {
-        case .command(var model):
-            model.dependsOn = value
-            return .command(model)
-        case .wait(var model):
-            model.dependsOn = value
-            return .wait(model)
-        case .block(var model):
-            model.dependsOn = value
-            return .block(model)
-        case .trigger(var model):
-            model.dependsOn = value
-            return .trigger(model)
-        case .group(var model):
-            model.dependsOn = value
-            return .group(model)
         }
     }
 }

@@ -46,7 +46,8 @@ func `Step template modifiers and merge paths cover defaults and overrides`() {
         }
     }
 
-    guard case .command(let noLocal) = pipeline.materializedStepModels[0] else {
+    let noLocalStep = pipeline.materializedStepModels[0]
+    guard let noLocal = noLocalStep.command else {
         Issue.record("Expected first command step")
         return
     }
@@ -57,20 +58,20 @@ func `Step template modifiers and merge paths cover defaults and overrides`() {
     #expect(noLocal.plugins?.map(\.source) == ["template/plugin#v1.0.0"])
     #expect(noLocal.artifactPaths?.paths == ["template/logs/**"])
     #expect(noLocal.notify == [StepNotifySlack("#template")])
-    #expect(noLocal.condition == "build.branch == \"main\"")
-    #expect(noLocal.branches == "main")
+    #expect(noLocalStep.condition == "build.branch == \"main\"")
+    #expect(noLocalStep.branches == "main")
     #expect(noLocal.softFail == .conditions([SoftFailCondition(exitStatus: 7)]))
     #expect(noLocal.retry?.automatic == .rules([RetryRule(exitStatus: 3, limit: 1)]))
     #expect(noLocal.retry?.manual == RetryManual(allowed: true, permitOnPassed: true, reason: "template"))
     #expect(noLocal.timeoutInMinutes == 12)
     #expect(noLocal.priority == 9)
     #expect(noLocal.parallelism == 2)
-    #expect(noLocal.allowDependencyFailure == true)
+    #expect(noLocalStep.allowDependencyFailure == true)
     #expect(noLocal.concurrency == 4)
     #expect(noLocal.concurrencyGroup == "template-group-2")
     #expect(noLocal.concurrencyMethod == .eager)
 
-    guard case .command(let withLocals) = pipeline.materializedStepModels[1] else {
+    guard let withLocals = pipeline.materializedStepModels[1].command else {
         Issue.record("Expected second command step")
         return
     }

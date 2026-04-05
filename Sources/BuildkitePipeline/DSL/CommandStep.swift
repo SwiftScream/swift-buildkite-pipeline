@@ -1,12 +1,12 @@
 import Foundation
 
 /// A command step.
-public struct CommandStep: Equatable, Sendable, PipelineFragmentConvertible {
-    var model: CommandStepModel
+public struct CommandStep: Equatable, Sendable, PipelineFragmentConvertible, StepModelBackedStep {
+    var model: StepModel
 
     /// Returns this value as a composable fragment.
     public var pipelineFragment: PipelineFragment {
-        PipelineFragment(.command(model))
+        pipelineFragmentValue
     }
 }
 
@@ -14,7 +14,7 @@ public struct CommandStep: Equatable, Sendable, PipelineFragmentConvertible {
 public func Step(_ label: String? = nil, @CommandStepBuilder _ content: () -> [CommandStepAttribute]) -> CommandStep {
     var step = commandStepModel(from: content())
     step.label = label
-    return CommandStep(model: step)
+    return CommandStep(model: .command(step))
 }
 
 /// Creates a command step using direct parameters.
@@ -311,28 +311,30 @@ private func makeCommandStep(
     let step = CommandStepModel(
         label: label,
         command: command,
-        key: key,
         plugins: plugins,
         agents: agents,
         env: env,
         artifactPaths: artifactPaths.map(ArtifactPaths.init),
-        branches: branches,
         concurrency: concurrency?.limit,
         concurrencyGroup: concurrency?.group,
         concurrencyMethod: concurrency?.method,
-        dependsOn: dependencyCondition(from: dependsOn),
-        condition: condition,
         softFail: softFail,
         retry: retry,
         timeoutInMinutes: timeoutInMinutes,
         matrix: matrix,
         notify: notify,
         priority: priority,
-        allowDependencyFailure: allowDependencyFailure,
         parallelism: parallelism,
     )
 
-    return CommandStep(model: step)
+    return CommandStep(model: .command(
+        step,
+        key: key,
+        dependsOn: dependencyCondition(from: dependsOn),
+        allowDependencyFailure: allowDependencyFailure,
+        condition: condition,
+        branches: branches,
+    ))
 }
 
 // swiftlint:disable:next cyclomatic_complexity
@@ -392,12 +394,12 @@ private func appendArtifactPath(_ path: String, to step: inout CommandStepModel)
 public extension CommandStep {
     /// Sets the step label.
     func label(_ value: String) -> CommandStep {
-        map { $0.label = value }
+        mapCommand { $0.label = value }
     }
 
     /// Sets the step key.
     func key(_ value: String) -> CommandStep {
-        map { $0.key = value }
+        withKey(value)
     }
 
     /// Sets the step key.
@@ -407,17 +409,17 @@ public extension CommandStep {
 
     /// Sets the Buildkite `if` condition.
     func condition(_ value: String) -> CommandStep {
-        map { $0.condition = value }
+        withCondition(value)
     }
 
     /// Sets branch filters for the step.
     func branches(_ value: String) -> CommandStep {
-        map { $0.branches = value }
+        withBranches(value)
     }
 
     /// Sets dependencies for the step.
     func dependsOn(_ dependencies: [StepDependency]) -> CommandStep {
-        map { $0.dependsOn = dependencyCondition(from: dependencies) }
+        withDependsOn(dependencies)
     }
 
     /// Sets dependencies for the step.
@@ -432,12 +434,12 @@ public extension CommandStep {
 
     /// Controls whether failed dependencies are allowed.
     func allowDependencyFailure(_ value: Bool = true) -> CommandStep {
-        map { $0.allowDependencyFailure = value }
+        withAllowDependencyFailure(value)
     }
 
     /// Sets concurrency settings using discrete values.
     func concurrency(limit: Int, group: String, method: ConcurrencyMethod? = nil) -> CommandStep {
-        map {
+        mapCommand {
             $0.concurrency = limit
             $0.concurrencyGroup = group
             $0.concurrencyMethod = method
@@ -451,22 +453,22 @@ public extension CommandStep {
 
     /// Enables or disables soft-fail behavior.
     func softFail(_ enabled: Bool = true) -> CommandStep {
-        map { $0.softFail = .enabled(enabled) }
+        mapCommand { $0.softFail = .enabled(enabled) }
     }
 
     /// Sets soft-fail behavior for specific exit statuses.
     func softFail(exitStatuses: [Int]) -> CommandStep {
-        map { $0.softFail = .conditions(exitStatuses.map { SoftFailCondition(exitStatus: $0) }) }
+        mapCommand { $0.softFail = .conditions(exitStatuses.map { SoftFailCondition(exitStatus: $0) }) }
     }
 
     /// Sets the retry policy.
     func retry(_ policy: RetryPolicy?) -> CommandStep {
-        map { $0.retry = policy }
+        mapCommand { $0.retry = policy }
     }
 
     /// Enables or disables automatic retry.
     func automaticallyRetry(_ enabled: Bool = true) -> CommandStep {
-        map {
+        mapCommand {
             var retry = $0.retry ?? RetryPolicy()
             retry.automatic = .enabled(enabled)
             $0.retry = retry
@@ -475,7 +477,7 @@ public extension CommandStep {
 
     /// Sets an automatic retry limit.
     func automaticallyRetry(limit: Int) -> CommandStep {
-        map {
+        mapCommand {
             var retry = $0.retry ?? RetryPolicy()
             retry.automatic = .limit(limit)
             $0.retry = retry
@@ -484,7 +486,7 @@ public extension CommandStep {
 
     /// Sets explicit automatic retry rules.
     func automaticallyRetry(rules: [RetryAutomaticRule]) -> CommandStep {
-        map {
+        mapCommand {
             var retry = $0.retry ?? RetryPolicy()
             retry.automatic = .rules(rules)
             $0.retry = retry
@@ -493,7 +495,7 @@ public extension CommandStep {
 
     /// Configures manual retry behavior.
     func manualRetry(allowed: Bool? = nil, permitOnPassed: Bool?, reason: String? = nil) -> CommandStep {
-        map {
+        mapCommand {
             var retry = $0.retry ?? RetryPolicy()
             retry.manual = RetryManual(allowed: allowed, permitOnPassed: permitOnPassed, reason: reason)
             $0.retry = retry
@@ -502,22 +504,16 @@ public extension CommandStep {
 
     /// Sets the timeout in minutes.
     func timeoutInMinutes(_ value: Int) -> CommandStep {
-        map { $0.timeoutInMinutes = value }
+        mapCommand { $0.timeoutInMinutes = value }
     }
 
     /// Sets the step priority.
     func priority(_ value: Int) -> CommandStep {
-        map { $0.priority = value }
+        mapCommand { $0.priority = value }
     }
 
     /// Sets the step parallelism.
     func parallelism(_ value: Int) -> CommandStep {
-        map { $0.parallelism = value }
-    }
-
-    private func map(_ update: (inout CommandStepModel) -> Void) -> CommandStep {
-        var copy = model
-        update(&copy)
-        return CommandStep(model: copy)
+        mapCommand { $0.parallelism = value }
     }
 }

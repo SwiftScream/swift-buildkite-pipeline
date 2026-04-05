@@ -1,12 +1,12 @@
 import Foundation
 
 /// A wait step (`wait`).
-public struct WaitStep: Equatable, Sendable, PipelineFragmentConvertible {
-    var model: WaitStepModel
+public struct WaitStep: Equatable, Sendable, PipelineFragmentConvertible, StepModelBackedStep {
+    var model: StepModel
 
     /// Returns this value as a composable fragment.
     public var pipelineFragment: PipelineFragment {
-        PipelineFragment(.wait(model))
+        pipelineFragmentValue
     }
 }
 
@@ -19,9 +19,9 @@ public func Wait(
     condition: String? = nil,
     branches: String? = nil,
 ) -> WaitStep {
-    WaitStep(model: WaitStepModel(
+    WaitStep(model: .wait(
+        WaitStepModel(continueOnFailure: continueOnFailure),
         key: key,
-        continueOnFailure: continueOnFailure,
         dependsOn: dependencyCondition(from: dependsOn),
         allowDependencyFailure: allowDependencyFailure,
         condition: condition,
@@ -51,7 +51,7 @@ public func Wait(
 public extension WaitStep {
     /// Sets the step key.
     func key(_ value: String) -> WaitStep {
-        map { $0.key = value }
+        withKey(value)
     }
 
     /// Sets the step key.
@@ -61,17 +61,17 @@ public extension WaitStep {
 
     /// Sets the Buildkite `if` condition.
     func condition(_ value: String) -> WaitStep {
-        map { $0.condition = value }
+        withCondition(value)
     }
 
     /// Sets branch filters for the step.
     func branches(_ value: String) -> WaitStep {
-        map { $0.branches = value }
+        withBranches(value)
     }
 
     /// Sets dependencies for the step.
     func dependsOn(_ dependencies: [StepDependency]) -> WaitStep {
-        map { $0.dependsOn = dependencyCondition(from: dependencies) }
+        withDependsOn(dependencies)
     }
 
     /// Sets dependencies for the step.
@@ -86,17 +86,11 @@ public extension WaitStep {
 
     /// Controls whether failed dependencies are allowed.
     func allowDependencyFailure(_ value: Bool = true) -> WaitStep {
-        map { $0.allowDependencyFailure = value }
+        withAllowDependencyFailure(value)
     }
 
     /// Controls whether downstream steps continue after failures.
     func continueOnFailure(_ value: Bool = true) -> WaitStep {
-        map { $0.continueOnFailure = value }
-    }
-
-    private func map(_ update: (inout WaitStepModel) -> Void) -> WaitStep {
-        var copy = model
-        update(&copy)
-        return WaitStep(model: copy)
+        mapWait { $0.continueOnFailure = value }
     }
 }

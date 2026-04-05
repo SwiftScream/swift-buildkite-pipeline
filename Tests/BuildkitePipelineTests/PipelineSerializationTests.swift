@@ -395,7 +395,7 @@ func `Step templates apply defaults and keep step-local precedence`() {
 
     #expect(pipeline.materializedStepModels.count == 3)
 
-    guard case .command(let first) = pipeline.materializedStepModels[0] else {
+    guard let first = pipeline.materializedStepModels[0].command else {
         #expect(Bool(false))
         return
     }
@@ -408,7 +408,7 @@ func `Step templates apply defaults and keep step-local precedence`() {
     #expect(first.timeoutInMinutes == 15)
     #expect(first.priority == 7)
 
-    guard case .command(let second) = pipeline.materializedStepModels[1] else {
+    guard let second = pipeline.materializedStepModels[1].command else {
         #expect(Bool(false))
         return
     }
@@ -418,7 +418,7 @@ func `Step templates apply defaults and keep step-local precedence`() {
     #expect(second.timeoutInMinutes == 20)
     #expect(second.priority == 7)
 
-    guard case .wait = pipeline.materializedStepModels[2] else {
+    guard pipeline.materializedStepModels[2].wait != nil else {
         #expect(Bool(false))
         return
     }
@@ -444,13 +444,13 @@ func `Step templates apply recursively to command steps nested in groups`() {
         }
     }
 
-    guard case .group(let group) = pipeline.materializedStepModels[0] else {
+    guard let group = pipeline.materializedStepModels[0].group else {
         #expect(Bool(false))
         return
     }
     #expect(group.steps.count == 2)
 
-    guard case .command(let nestedOne) = group.steps[0] else {
+    guard let nestedOne = group.steps[0].command else {
         #expect(Bool(false))
         return
     }
@@ -459,7 +459,7 @@ func `Step templates apply recursively to command steps nested in groups`() {
     #expect(nestedOne.env?["GLOBAL"] == "true")
     #expect(nestedOne.timeoutInMinutes == 10)
 
-    guard case .command(let nestedTwo) = group.steps[1] else {
+    guard let nestedTwo = group.steps[1].command else {
         #expect(Bool(false))
         return
     }

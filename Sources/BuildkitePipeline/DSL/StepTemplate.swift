@@ -148,61 +148,65 @@ public extension StepTemplate {
 
 private extension StepTemplate {
     func applying(to model: StepModel) -> StepModel {
-        switch model {
+        switch model.payload {
         case .command(var command):
-            apply(to: &command)
-            return .command(command)
+            var step = model
+            apply(to: &step, command: &command)
+            step.payload = .command(command)
+            return step
         case .group(var group):
             group.steps = group.steps.map(applying(to:))
-            return .group(group)
+            var step = model
+            step.payload = .group(group)
+            return step
         case .wait, .block, .trigger:
             return model
         }
     }
 
     // swiftlint:disable:next function_body_length cyclomatic_complexity
-    func apply(to step: inout CommandStepModel) {
+    func apply(to step: inout StepModel, command: inout CommandStepModel) {
         let defaultsFromAttributes = commandStepModel(from: attributes)
 
-        if step.command == nil {
-            step.command = defaultsFromAttributes.command
+        if command.command == nil {
+            command.command = defaultsFromAttributes.command
         }
 
         if let templatePaths = defaultsFromAttributes.artifactPaths?.paths, !templatePaths.isEmpty {
-            let existing = step.artifactPaths?.paths ?? []
-            step.artifactPaths = ArtifactPaths(templatePaths + existing)
+            let existing = command.artifactPaths?.paths ?? []
+            command.artifactPaths = ArtifactPaths(templatePaths + existing)
         }
 
         if let templatePlugins = defaultsFromAttributes.plugins, !templatePlugins.isEmpty {
-            step.plugins = templatePlugins + (step.plugins ?? [])
+            command.plugins = templatePlugins + (command.plugins ?? [])
         }
 
         if let templateAgents = defaultsFromAttributes.orderedAgents, !templateAgents.isEmpty {
             var mergedAgents = templateAgents
-            if let existingAgents = step.orderedAgents {
+            if let existingAgents = command.orderedAgents {
                 for entry in existingAgents.allEntries {
                     mergedAgents[entry.key] = entry.value
                 }
             }
-            step.orderedAgents = mergedAgents
+            command.orderedAgents = mergedAgents
         }
 
         if let templateEnv = defaultsFromAttributes.orderedEnv, !templateEnv.isEmpty {
             var mergedEnv = templateEnv
-            if let existingEnv = step.orderedEnv {
+            if let existingEnv = command.orderedEnv {
                 for entry in existingEnv.allEntries {
                     mergedEnv[entry.key] = entry.value
                 }
             }
-            step.orderedEnv = mergedEnv
+            command.orderedEnv = mergedEnv
         }
 
-        if step.matrix == nil {
-            step.matrix = defaultsFromAttributes.matrix
+        if command.matrix == nil {
+            command.matrix = defaultsFromAttributes.matrix
         }
 
         if let templateNotify = defaultsFromAttributes.notify, !templateNotify.isEmpty {
-            step.notify = templateNotify + (step.notify ?? [])
+            command.notify = templateNotify + (command.notify ?? [])
         }
 
         if step.condition == nil {
@@ -213,35 +217,35 @@ private extension StepTemplate {
             step.branches = branches
         }
 
-        if step.softFail == nil {
-            step.softFail = softFail
+        if command.softFail == nil {
+            command.softFail = softFail
         }
 
-        if step.retry == nil {
-            step.retry = retry
+        if command.retry == nil {
+            command.retry = retry
         }
 
-        if step.timeoutInMinutes == nil {
-            step.timeoutInMinutes = timeoutInMinutes
+        if command.timeoutInMinutes == nil {
+            command.timeoutInMinutes = timeoutInMinutes
         }
 
-        if step.priority == nil {
-            step.priority = priority
+        if command.priority == nil {
+            command.priority = priority
         }
 
-        if step.parallelism == nil {
-            step.parallelism = parallelism
+        if command.parallelism == nil {
+            command.parallelism = parallelism
         }
 
         if step.allowDependencyFailure == nil {
             step.allowDependencyFailure = allowDependencyFailure
         }
 
-        if step.concurrency == nil, step.concurrencyGroup == nil, let concurrency {
-            step.concurrency = concurrency.limit
-            step.concurrencyGroup = concurrency.group
-            if step.concurrencyMethod == nil {
-                step.concurrencyMethod = concurrency.method
+        if command.concurrency == nil, command.concurrencyGroup == nil, let concurrency {
+            command.concurrency = concurrency.limit
+            command.concurrencyGroup = concurrency.group
+            if command.concurrencyMethod == nil {
+                command.concurrencyMethod = concurrency.method
             }
         }
     }

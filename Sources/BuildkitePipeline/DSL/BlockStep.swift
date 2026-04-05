@@ -50,12 +50,12 @@ public func Option(_ label: String, value: String) -> SelectOption {
 }
 
 /// A block/input step (`block`/`input`).
-public struct BlockStep: Equatable, Sendable, PipelineFragmentConvertible {
-    var model: BlockStepModel
+public struct BlockStep: Equatable, Sendable, PipelineFragmentConvertible, StepModelBackedStep {
+    var model: StepModel
 
     /// Returns this value as a composable fragment.
     public var pipelineFragment: PipelineFragment {
-        PipelineFragment(.block(model))
+        pipelineFragmentValue
     }
 }
 
@@ -63,14 +63,14 @@ public struct BlockStep: Equatable, Sendable, PipelineFragmentConvertible {
 public func Block(_ prompt: String? = nil, @BlockStepBuilder _ content: () -> [BlockStepAttribute] = { [] }) -> BlockStep {
     var step = BlockStepModel(block: prompt)
     applyBlockAttributes(content(), to: &step)
-    return BlockStep(model: step)
+    return BlockStep(model: .block(step))
 }
 
 /// Creates an input step.
 public func Input(_ prompt: String, @BlockStepBuilder _ content: () -> [BlockStepAttribute] = { [] }) -> BlockStep {
     var step = BlockStepModel(input: prompt)
     applyBlockAttributes(content(), to: &step)
-    return BlockStep(model: step)
+    return BlockStep(model: .block(step))
 }
 
 private func applyBlockAttributes(_ attributes: [BlockStepAttribute], to step: inout BlockStepModel) {
@@ -87,7 +87,7 @@ private func applyBlockAttributes(_ attributes: [BlockStepAttribute], to step: i
 public extension BlockStep {
     /// Sets the step key.
     func key(_ value: String) -> BlockStep {
-        map { $0.key = value }
+        withKey(value)
     }
 
     /// Sets the step key.
@@ -97,17 +97,17 @@ public extension BlockStep {
 
     /// Sets the Buildkite `if` condition.
     func condition(_ value: String) -> BlockStep {
-        map { $0.condition = value }
+        withCondition(value)
     }
 
     /// Sets branch filters for the step.
     func branches(_ value: String) -> BlockStep {
-        map { $0.branches = value }
+        withBranches(value)
     }
 
     /// Sets dependencies for the step.
     func dependsOn(_ dependencies: [StepDependency]) -> BlockStep {
-        map { $0.dependsOn = dependencyCondition(from: dependencies) }
+        withDependsOn(dependencies)
     }
 
     /// Sets dependencies for the step.
@@ -122,17 +122,11 @@ public extension BlockStep {
 
     /// Controls whether failed dependencies are allowed.
     func allowDependencyFailure(_ value: Bool = true) -> BlockStep {
-        map { $0.allowDependencyFailure = value }
+        withAllowDependencyFailure(value)
     }
 
     /// Overrides the prompt shown to users.
     func prompt(_ value: String) -> BlockStep {
-        map { $0.prompt = value }
-    }
-
-    private func map(_ update: (inout BlockStepModel) -> Void) -> BlockStep {
-        var copy = model
-        update(&copy)
-        return BlockStep(model: copy)
+        mapBlock { $0.prompt = value }
     }
 }

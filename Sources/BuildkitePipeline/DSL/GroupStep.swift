@@ -1,12 +1,12 @@
 import Foundation
 
 /// A group step (`group`).
-public struct GroupStep: Equatable, Sendable, PipelineFragmentConvertible {
-    var model: GroupStepModel
+public struct GroupStep: Equatable, Sendable, PipelineFragmentConvertible, StepModelBackedStep {
+    var model: StepModel
 
     /// Returns this value as a composable fragment.
     public var pipelineFragment: PipelineFragment {
-        PipelineFragment(.group(model))
+        pipelineFragmentValue
     }
 }
 
@@ -24,16 +24,18 @@ public func Group(
     let steps = content().materializedModels()
     let group = GroupStepModel(
         group: label,
-        key: key,
-        condition: condition,
-        branches: branches,
-        dependsOn: dependencyCondition(from: dependsOn),
-        allowDependencyFailure: allowDependencyFailure,
         steps: steps,
         notify: notify,
     )
 
-    return GroupStep(model: group)
+    return GroupStep(model: .group(
+        group,
+        key: key,
+        dependsOn: dependencyCondition(from: dependsOn),
+        allowDependencyFailure: allowDependencyFailure,
+        condition: condition,
+        branches: branches,
+    ))
 }
 
 /// Creates a group step with nested child steps and a typed step key.
@@ -62,7 +64,7 @@ public func Group(
 public extension GroupStep {
     /// Sets the step key.
     func key(_ value: String) -> GroupStep {
-        map { $0.key = value }
+        withKey(value)
     }
 
     /// Sets the step key.
@@ -72,17 +74,17 @@ public extension GroupStep {
 
     /// Sets the Buildkite `if` condition.
     func condition(_ value: String) -> GroupStep {
-        map { $0.condition = value }
+        withCondition(value)
     }
 
     /// Sets branch filters for the step.
     func branches(_ value: String) -> GroupStep {
-        map { $0.branches = value }
+        withBranches(value)
     }
 
     /// Sets dependencies for the step.
     func dependsOn(_ dependencies: [StepDependency]) -> GroupStep {
-        map { $0.dependsOn = dependencyCondition(from: dependencies) }
+        withDependsOn(dependencies)
     }
 
     /// Sets dependencies for the step.
@@ -97,17 +99,11 @@ public extension GroupStep {
 
     /// Controls whether failed dependencies are allowed.
     func allowDependencyFailure(_ value: Bool = true) -> GroupStep {
-        map { $0.allowDependencyFailure = value }
+        withAllowDependencyFailure(value)
     }
 
     /// Sets notification rules for the step.
     func notify(@NotifyBuilder _ content: () -> [NotificationRule]) -> GroupStep {
-        map { $0.notify = content() }
-    }
-
-    private func map(_ update: (inout GroupStepModel) -> Void) -> GroupStep {
-        var copy = model
-        update(&copy)
-        return GroupStep(model: copy)
+        mapGroup { $0.notify = content() }
     }
 }
