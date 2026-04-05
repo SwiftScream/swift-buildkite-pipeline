@@ -1,0 +1,7 @@
+steps:
+- label: Build
+  key: build
+  command: swift build
+- label: Deploy
+  depends_on: build
+  command: bash .buildkite/deploy.sh

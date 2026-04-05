@@ -1,0 +1,12 @@
+steps:
+- label: Lint
+  key: lint
+  command: swift-format lint .
+- label: Tests
+  key: tests
+  command: swift test
+- label: Publish
+  depends_on:
+  - lint
+  - tests
+  command: swift run publish

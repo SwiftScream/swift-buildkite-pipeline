@@ -1,0 +1,14 @@
+steps:
+- label: Build
+  key: build
+  command: swift build
+- label: Prepare Deploy
+  key: prepare_deploy
+  depends_on: build
+  command: echo prepare
+- label: Deploy
+  depends_on: prepare_deploy
+  command: bash .buildkite/deploy.sh
+- label: Notify
+  depends_on: prepare_deploy
+  command: echo notify

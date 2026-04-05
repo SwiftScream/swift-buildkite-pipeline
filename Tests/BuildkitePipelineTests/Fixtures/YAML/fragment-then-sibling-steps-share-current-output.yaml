@@ -1,0 +1,17 @@
+steps:
+- label: Lint
+  key: lint
+  command: swift-format lint .
+- label: Test
+  key: test
+  depends_on: lint
+  command: swift test
+- label: Upload Coverage
+  depends_on: test
+  command: bash .buildkite/upload-coverage.sh
+- label: A
+  depends_on: test
+  command: echo a
+- label: B
+  depends_on: test
+  command: echo b

@@ -1,0 +1,11 @@
+steps:
+- label: ':package: Build App!'
+  key: build_app
+  command: swift build
+- label: Build App
+  key: build_app_2
+  depends_on: build_app
+  command: swift test
+- label: Deploy
+  depends_on: build_app_2
+  command: bash .buildkite/deploy.sh

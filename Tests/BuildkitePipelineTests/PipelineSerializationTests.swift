@@ -542,6 +542,335 @@ func `Dependencies support typed keys and per-edge allow_failure`() throws {
 }
 
 @Test
+func `Fragment chaining supports explicit output override and auto dependency keys`() throws {
+    let pipeline = Pipeline {
+        Step("Lint") {
+            Command("swift-format lint .")
+        }
+        .then {
+            Step("Test") {
+                Command("swift test")
+            }
+            .then {
+                Step("Upload Coverage") {
+                    Command("bash .buildkite/upload-coverage.sh")
+                }
+            }
+            .setOutput()
+        }
+        .then {
+            Step("Deploy") {
+                Command("bash .buildkite/deploy.sh")
+            }
+        }
+    }
+
+    try assertPipelineYAMLFixture(pipeline, fixtureName: "fragment-then-set-output-encoding")
+}
+
+@Test
+func `Successive fragment chaining advances to the most recently appended outputs`() throws {
+    let lintAndTest = Fragment {
+        Step("Lint") {
+            Command("swift-format lint .")
+        }
+        .then {
+            Step("Test") {
+                Command("swift test")
+            }
+            .then {
+                Step("Upload Coverage") {
+                    Command("bash .buildkite/upload-coverage.sh")
+                }
+            }
+            .setOutput()
+        }
+    }
+
+    let pipeline = Pipeline {
+        lintAndTest
+            .then {
+                Step("A") {
+                    Command("echo a")
+                }
+            }
+            .then {
+                Step("B") {
+                    Command("echo b")
+                }
+            }
+    }
+
+    try assertPipelineYAMLFixture(
+        pipeline,
+        fixtureName: "fragment-then-advances-to-most-recent-output",
+    )
+}
+
+@Test
+func `Sibling steps in one then block share the same current outputs`() throws {
+    let lintAndTest = Fragment {
+        Step("Lint") {
+            Command("swift-format lint .")
+        }
+        .then {
+            Step("Test") {
+                Command("swift test")
+            }
+            .then {
+                Step("Upload Coverage") {
+                    Command("bash .buildkite/upload-coverage.sh")
+                }
+            }
+            .setOutput()
+        }
+    }
+
+    let pipeline = Pipeline {
+        lintAndTest.then {
+            Step("A") {
+                Command("echo a")
+            }
+
+            Step("B") {
+                Command("echo b")
+            }
+        }
+    }
+
+    try assertPipelineYAMLFixture(
+        pipeline,
+        fixtureName: "fragment-then-sibling-steps-share-current-output",
+    )
+}
+
+@Test
+func `Step templates preserve explicit fragment outputs`() throws {
+    let lintTemplate = StepTemplate {
+        Agent(queue: "ios2")
+    }
+
+    let lint = Steps(template: lintTemplate) {
+        Step("Commitlint") {
+            Command(".buildkite/commitlint")
+        }
+
+        Group("Lint") {
+            Step("SwiftLint") {
+                Command(".buildkite/swiftlint")
+            }
+        }
+        .setOutput()
+    }
+
+    let pipeline = Pipeline {
+        lint.then {
+            Step("A") {
+                Command("echo a")
+            }
+        }
+    }
+
+    try assertPipelineYAMLFixture(
+        pipeline,
+        fixtureName: "step-template-preserves-fragment-output-override",
+    )
+}
+
+@Test
+func `Fragment chaining merges explicit dependencies with chained dependencies`() throws {
+    let existing = StepKey("existing")
+    let build = StepKey("build")
+
+    let pipeline = Pipeline {
+        Step("Seed") {
+            Command("echo seed")
+        }
+        .key(existing)
+
+        Step("Build") {
+            Command("echo build")
+        }
+        .key(build)
+        .then {
+            Step("Test") {
+                Command("echo test")
+            }
+            .dependsOn(allowingFailure(existing))
+        }
+    }
+
+    try assertPipelineYAMLFixture(
+        pipeline,
+        fixtureName: "fragment-chaining-merges-explicit-and-derived-dependencies",
+    )
+}
+
+@Test
+func `Fragment composition handles empty chaining and merged output overrides`() throws {
+    let left = Fragment {
+        Step("Left Entry") {
+            Command("echo left-entry")
+        }
+        .then {
+            Step("Left Tail") {
+                Command("echo left-tail")
+            }
+        }
+        .setOutput()
+    }
+
+    let right = Fragment {
+        Step("Right Entry") {
+            Command("echo right-entry")
+        }
+        .then {
+            Step("Right Tail") {
+                Command("echo right-tail")
+            }
+        }
+        .setOutput()
+    }
+
+    #expect(PipelineFragment.empty.then(right) == right)
+    #expect(left.then(PipelineFragment.empty) == left)
+
+    let pipeline = Pipeline {
+        (left + right).then {
+            Step("After Merge") {
+                Command("echo after")
+            }
+        }
+    }
+
+    try assertPipelineYAMLFixture(
+        pipeline,
+        fixtureName: "fragment-output-override-merge-and-empty-chaining",
+    )
+}
+
+@Test
+func `Automatic dependency keys derive from step labels with alias stripping and suffixing`() throws {
+    let pipeline = Pipeline {
+        Step(":package: Build App!") {
+            Command("swift build")
+        }
+        .then {
+            Step("Build App") {
+                Command("swift test")
+            }
+            .then {
+                Step("Deploy") {
+                    Command("bash .buildkite/deploy.sh")
+                }
+            }
+        }
+    }
+
+    try assertPipelineYAMLFixture(
+        pipeline,
+        fixtureName: "auto-dependency-key-label-normalization-and-collision",
+    )
+}
+
+@Test
+func `PipelineFragmentConvertible direct fragment overloads materialize as expected`() throws {
+    let chainedWithDirectFragment = Step("Build") {
+        Command("swift build")
+    }
+    .then(
+        Step("Deploy") {
+            Command("bash .buildkite/deploy.sh")
+        }
+        .fragment,
+    )
+
+    let pipeline = Pipeline {
+        chainedWithDirectFragment
+    }
+
+    try assertPipelineYAMLFixture(
+        pipeline,
+        fixtureName: "direct-fragment-overloads-materialization",
+    )
+}
+
+@Test
+func `Direct fragment overloads preserve explicit outputs for downstream chaining`() throws {
+    let deployFragment = Step("Prepare Deploy") {
+        Command("echo prepare")
+    }
+    .then {
+        Step("Deploy") {
+            Command("bash .buildkite/deploy.sh")
+        }
+    }
+    .setOutput()
+
+    let pipeline = Pipeline {
+        Step("Build") {
+            Command("swift build")
+        }
+        .then(deployFragment)
+        .then {
+            Step("Notify") {
+                Command("echo notify")
+            }
+        }
+    }
+
+    try assertPipelineYAMLFixture(
+        pipeline,
+        fixtureName: "direct-fragment-overloads-preserve-explicit-output",
+    )
+}
+
+@Test
+func `Fragment materialization assigns dependencies for wait trigger and group targets`() throws {
+    let chain = Step("Seed") {
+        Command("echo seed")
+    }
+    .then {
+        Wait()
+    }
+    .then {
+        Trigger("deploy-pipeline")
+            .label(":rocket:")
+    }
+    .then {
+        Group("Gate") {
+            Step("Nested") {
+                Command("echo nested")
+            }
+        }
+    }
+    .then {
+        Step("Final") {
+            Command("echo final")
+        }
+    }
+
+    let pipeline = Pipeline {
+        Step("Existing Gate") {
+            Command("echo gate")
+        }
+        .key("gate")
+
+        Step("Existing Gate 2") {
+            Command("echo gate-2")
+        }
+        .key("gate_2")
+
+        chain
+    }
+
+    try assertPipelineYAMLFixture(
+        pipeline,
+        fixtureName: "fragment-materialization-dependency-targets",
+    )
+}
+
+@Test
 func `Wait step encoding`() throws {
     let build = StepKey("build")
     let wait = StepKey("wait-for-build")
@@ -561,6 +890,31 @@ func `Wait step encoding`() throws {
     }
 
     try assertPipelineYAMLFixture(pipeline, fixtureName: "wait-step-encoding")
+}
+
+@Test
+func `Unnamed block dependency sources use standard auto key numbering`() throws {
+    let pipeline = Pipeline {
+        Step("Build") {
+            Command("swift build")
+        }
+        .then {
+            Block().then {
+                Step("Package") {
+                    Command("echo package")
+                }
+            }
+        }
+        .then {
+            Block().then {
+                Step("Upload") {
+                    Command("echo upload")
+                }
+            }
+        }
+    }
+
+    try assertPipelineYAMLFixture(pipeline, fixtureName: "unnamed-block-auto-key-numbering")
 }
 
 @Test

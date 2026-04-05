@@ -1,0 +1,26 @@
+steps:
+- label: Existing Gate
+  key: gate
+  command: echo gate
+- label: Existing Gate 2
+  key: gate_2
+  command: echo gate-2
+- label: Seed
+  key: seed
+  command: echo seed
+- wait: null
+  key: _auto
+  depends_on: seed
+- trigger: deploy-pipeline
+  label: ':rocket:'
+  key: _auto_2
+  depends_on: _auto
+- group: Gate
+  key: gate_3
+  depends_on: _auto_2
+  steps:
+  - label: Nested
+    command: echo nested
+- label: Final
+  depends_on: gate_3
+  command: echo final

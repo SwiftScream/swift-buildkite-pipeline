@@ -3,6 +3,7 @@ child_config: Tests/.swiftlint-tests.yml
 disabled_rules:
   - line_length
   - file_length
+  - for_where
 
 opt_in_rules:
   - missing_docs

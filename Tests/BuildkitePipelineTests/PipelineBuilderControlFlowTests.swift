@@ -8,10 +8,11 @@ func `PipelineBuilder and PipelineFragmentBuilder support control flow and fragm
     let alwaysFalse = Date().timeIntervalSinceReferenceDate < 0
     let optionalFlag = ProcessInfo.processInfo.environment["BUILDKITE_PIPELINE_OPTIONAL"] == "1"
 
-    let extraTopLevelSteps = Step("Top Array Step") {
-        Command("echo top-array")
+    let extraTopLevelSteps = Fragment {
+        Step("Top Array Step") {
+            Command("echo top-array")
+        }
     }
-    .pipelineFragment
 
     let sharedEnv = GlobalEnv([
         "SHARED_A": "1",
@@ -106,15 +107,48 @@ func `PipelineBuilder and PipelineFragmentBuilder support control flow and fragm
                 }
             }
 
-            let childArray = Step("Child Array Step") {
-                Command("echo child-array")
+            let childArray: PipelineFragment = Fragment {
+                Step("Child Array Step") {
+                    Command("echo child-array")
+                }
             }
-            .pipelineFragment
             childArray
         }
     }
 
     try assertPipelineYAMLFixture(pipeline, fixtureName: "pipeline-builder-control-flow")
+}
+
+@Test
+func `PipelineFragmentBuilder supports fragment final results`() throws {
+    @PipelineFragmentBuilder
+    var checks: PipelineFragment {
+        Step("Lint") {
+            Command("swift-format lint .")
+        }
+
+        Step("Tests") {
+            Command("swift test")
+        }
+    }
+
+    @PipelineFragmentBuilder
+    var publish: PipelineFragment {
+        Step("Publish") {
+            Command("swift run publish")
+        }
+    }
+
+    let pipeline = Pipeline {
+        checks.then {
+            publish
+        }
+    }
+
+    try assertPipelineYAMLFixture(
+        pipeline,
+        fixtureName: "pipeline-steps-builder-fragment-final-results",
+    )
 }
 
 @Test

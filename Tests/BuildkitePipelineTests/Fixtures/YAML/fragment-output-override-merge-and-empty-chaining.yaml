@@ -1,0 +1,18 @@
+steps:
+- label: Left Entry
+  key: left_entry
+  command: echo left-entry
+- label: Left Tail
+  depends_on: left_entry
+  command: echo left-tail
+- label: Right Entry
+  key: right_entry
+  command: echo right-entry
+- label: Right Tail
+  depends_on: right_entry
+  command: echo right-tail
+- label: After Merge
+  depends_on:
+  - left_entry
+  - right_entry
+  command: echo after

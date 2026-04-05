@@ -1,0 +1,13 @@
+steps:
+- label: Seed
+  key: existing
+  command: echo seed
+- label: Build
+  key: build
+  command: echo build
+- label: Test
+  depends_on:
+  - step: existing
+    allow_failure: true
+  - build
+  command: echo test

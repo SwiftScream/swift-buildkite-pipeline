@@ -1,0 +1,17 @@
+steps:
+- label: Build
+  key: build
+  command: swift build
+- block: ''
+  key: _auto
+  depends_on: build
+- label: Package
+  key: package
+  depends_on: _auto
+  command: echo package
+- block: ''
+  key: _auto_2
+  depends_on: package
+- label: Upload
+  depends_on: _auto_2
+  command: echo upload

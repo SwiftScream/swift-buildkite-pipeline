@@ -1,0 +1,15 @@
+steps:
+- label: Commitlint
+  command: .buildkite/commitlint
+  agents:
+    queue: ios2
+- group: Lint
+  key: lint
+  steps:
+  - label: SwiftLint
+    command: .buildkite/swiftlint
+    agents:
+      queue: ios2
+- label: A
+  depends_on: lint
+  command: echo a

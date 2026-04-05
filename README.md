@@ -168,6 +168,74 @@ Step("Report") {
 .dependsOn(build, allowingFailure(StepKey("flaky-non-blocking-check")))
 ```
 
+### Fragment Chaining With Explicit Outputs
+
+For modular sections, compose dependency graphs with `.then`:
+
+```swift
+@PipelineFragmentBuilder
+var lintAndTest: PipelineFragment {
+    Step("Lint") {
+        Command("swift-format lint .")
+    }
+    .then {
+        Step("Test") {
+            Command("swift test")
+        }
+        .then {
+            Step("Upload Coverage") {
+                Command("bash .buildkite/upload-coverage.sh")
+            }
+        }
+        .setOutput() // expose `Test` as this fragment's dependency output
+    }
+}
+
+let pipeline = Pipeline {
+    lintAndTest.then {
+        Step("Deploy") {
+            Command("bash .buildkite/deploy.sh")
+        }
+    }
+}
+```
+
+Each `.then` advances the fragment's current outputs to the fragment you just
+appended. That means successive chains build on each other:
+
+```swift
+lintAndTest
+    .then {
+        Step("A") {
+            Command("echo a")
+        }
+    }
+    .then {
+        Step("B") {
+            Command("echo b")
+        }
+    }
+```
+
+In this example, `A` depends on `Test`, and `B` depends on `A`.
+
+If multiple steps should all depend on the same upstream outputs, place them in
+the same `.then` block:
+
+```swift
+lintAndTest.then {
+    Step("A") {
+        Command("echo a")
+    }
+
+    Step("B") {
+        Command("echo b")
+    }
+}
+```
+
+In this case, both `A` and `B` depend on `Test`.
+
 ### Shared Defaults For A Step Section
 
 Use `Steps(template:)` with `StepTemplate` to apply shared defaults to multiple steps:

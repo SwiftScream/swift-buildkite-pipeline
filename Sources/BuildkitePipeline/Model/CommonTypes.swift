@@ -225,6 +225,28 @@ func dependencyCondition(from dependencies: [StepDependency]?) -> DependencyCond
     return .multiple(references)
 }
 
+func dependencies(from condition: DependencyCondition?) -> [StepDependency] {
+    guard let condition else {
+        return []
+    }
+
+    switch condition {
+    case .single(let reference):
+        return [stepDependency(from: reference)]
+    case .multiple(let references):
+        return references.map(stepDependency(from:))
+    }
+}
+
+private func stepDependency(from reference: DependencyReference) -> StepDependency {
+    switch reference {
+    case .key(let key):
+        StepDependency(StepKey(key))
+    case .detailed(let dependency):
+        StepDependency(StepKey(dependency.step), allowFailure: dependency.allowFailure)
+    }
+}
+
 /// Flexible plugin declaration with optional configuration.
 public struct Plugin: Encodable, Equatable, Sendable {
     /// The `source` value.
