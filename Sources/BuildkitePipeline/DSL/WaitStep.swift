@@ -12,6 +12,7 @@ public struct WaitStep: Equatable, Sendable, PipelineFragmentConvertible {
 
 /// Creates a wait step.
 public func Wait(
+    key: String? = nil,
     continueOnFailure: Bool? = nil,
     dependsOn: [StepDependency]? = nil,
     allowDependencyFailure: Bool? = nil,
@@ -19,6 +20,7 @@ public func Wait(
     branches: String? = nil,
 ) -> WaitStep {
     WaitStep(model: WaitStepModel(
+        key: key,
         continueOnFailure: continueOnFailure,
         dependsOn: dependencyCondition(from: dependsOn),
         allowDependencyFailure: allowDependencyFailure,
@@ -27,7 +29,36 @@ public func Wait(
     ))
 }
 
+/// Creates a wait step with a typed step key.
+public func Wait(
+    key: StepKey,
+    continueOnFailure: Bool? = nil,
+    dependsOn: [StepDependency]? = nil,
+    allowDependencyFailure: Bool? = nil,
+    condition: String? = nil,
+    branches: String? = nil,
+) -> WaitStep {
+    Wait(
+        key: key.rawValue,
+        continueOnFailure: continueOnFailure,
+        dependsOn: dependsOn,
+        allowDependencyFailure: allowDependencyFailure,
+        condition: condition,
+        branches: branches,
+    )
+}
+
 public extension WaitStep {
+    /// Sets the step key.
+    func key(_ value: String) -> WaitStep {
+        map { $0.key = value }
+    }
+
+    /// Sets the step key.
+    func key(_ value: StepKey) -> WaitStep {
+        key(value.rawValue)
+    }
+
     /// Sets the Buildkite `if` condition.
     func condition(_ value: String) -> WaitStep {
         map { $0.condition = value }

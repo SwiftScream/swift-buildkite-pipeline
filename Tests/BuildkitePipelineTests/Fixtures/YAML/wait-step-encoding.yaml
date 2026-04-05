@@ -3,6 +3,7 @@ steps:
   key: build
   command: swift build
 - wait: null
+  key: wait-for-build
   depends_on: build
   allow_dependency_failure: true
   if: build.branch == "main"

@@ -544,13 +544,14 @@ func `Dependencies support typed keys and per-edge allow_failure`() throws {
 @Test
 func `Wait step encoding`() throws {
     let build = StepKey("build")
+    let wait = StepKey("wait-for-build")
 
     let pipeline = Pipeline {
         Step("Build") {
             Command("swift build")
         }
         .key(build)
-        Wait()
+        Wait(key: wait)
             .dependsOn(build)
             .allowDependencyFailure()
             .condition("build.branch == \"main\"")

@@ -218,14 +218,17 @@ func `Trigger step modifiers cover retry dependency and metadata helpers`() {
 }
 
 @Test
-func `Wait step covers key-based dependencies and continue-on-failure modifier`() {
+func `Wait step modifiers cover keys dependencies and continue-on-failure`() {
     let wait = Wait(
+        key: "wait-initial",
         continueOnFailure: false,
         dependsOn: [StepDependency(StepKey("dep-initial"))],
         allowDependencyFailure: false,
         condition: "build.branch == \"dev\"",
         branches: "dev",
     )
+    .key("wait-string")
+    .key(StepKey("wait-final"))
     .branches("main")
     .dependsOn(keys: [StepKey("dep-key-1"), StepKey("dep-key-2")])
     .continueOnFailure()
@@ -238,6 +241,7 @@ func `Wait step covers key-based dependencies and continue-on-failure modifier`(
         return
     }
 
+    #expect(model.key == "wait-final")
     #expect(model.branches == "main")
     #expect(model.continueOnFailure == true)
     #expect(model.condition == "build.branch == \"main\"")

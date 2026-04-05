@@ -160,6 +160,7 @@ struct CommandStepModel: Encodable, Equatable, Sendable {
 
 /// A wait step (`wait`).
 struct WaitStepModel: Encodable, Equatable, Sendable {
+    var key: String?
     var continueOnFailure: Bool?
     var dependsOn: DependencyCondition?
     var allowDependencyFailure: Bool?
@@ -167,12 +168,14 @@ struct WaitStepModel: Encodable, Equatable, Sendable {
     var branches: String?
 
     init(
+        key: String? = nil,
         continueOnFailure: Bool? = nil,
         dependsOn: DependencyCondition? = nil,
         allowDependencyFailure: Bool? = nil,
         condition: String? = nil,
         branches: String? = nil,
     ) {
+        self.key = key
         self.continueOnFailure = continueOnFailure
         self.dependsOn = dependsOn
         self.allowDependencyFailure = allowDependencyFailure
@@ -182,6 +185,7 @@ struct WaitStepModel: Encodable, Equatable, Sendable {
 
     enum CodingKeys: String, CodingKey {
         case wait
+        case key
         case continueOnFailure = "continue_on_failure"
         case dependsOn = "depends_on"
         case allowDependencyFailure = "allow_dependency_failure"
@@ -192,6 +196,7 @@ struct WaitStepModel: Encodable, Equatable, Sendable {
     func encode(to encoder: Encoder) throws {
         var container = encoder.container(keyedBy: CodingKeys.self)
         try container.encodeNil(forKey: .wait)
+        try container.encodeIfPresent(key, forKey: .key)
         try container.encodeIfPresent(continueOnFailure, forKey: .continueOnFailure)
         try container.encodeIfPresent(dependsOn, forKey: .dependsOn)
         try container.encodeIfPresent(allowDependencyFailure, forKey: .allowDependencyFailure)
